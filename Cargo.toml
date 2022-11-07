@@ -6,3 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+base64 = "0.20.0-alpha.1"
+fastrlp = { version = "0.1.3", features = ["std"] }
+secp256k1 = { version = "0.24.0", features = ["global-context"]}
+sha3 = "0.10.5"
+bytes = { version = "1.2.1", features = ["std"] }
+thiserror = "1.0.37"
+hex = "0.4.3"
+rand = "0.8.5"
+
+[dev-dependencies]
+hex-literal = "0.3.4"
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"
+rand = "0.8.5"
+enr = { version = "0.6.2", features = ["k256", "rust-secp256k1"]}
