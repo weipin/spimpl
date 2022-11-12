@@ -11,3 +11,5 @@ pub(crate) const UDP4_KEY: &[u8] = b"udp";
 pub(crate) const IP6_KEY: &[u8] = b"ip6";
 pub(crate) const TCP6_KEY: &[u8] = b"tcp6";
 pub(crate) const UDP6_KEY: &[u8] = b"udp6";
+
+pub(crate) const SCHEME4_PUBLIC_KEY_KEY: &[u8] = b"secp256k1";

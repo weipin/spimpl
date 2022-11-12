@@ -42,7 +42,7 @@ impl Builder {
         self
     }
 
-    pub(crate) fn with_id(&mut self, id: &'static str) -> &mut Self {
+    pub(crate) fn with_id(&mut self, id: &'static [u8]) -> &mut Self {
         self.0.id = Some(id);
         self
     }

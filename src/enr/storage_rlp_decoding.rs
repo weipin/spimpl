@@ -197,7 +197,7 @@ mod tests {
             hex!("7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c")
         );
         assert_eq!(storage.seq, 1);
-        assert_eq!(storage.id.unwrap(), "v4");
+        assert_eq!(storage.id.unwrap(), b"v4");
         assert_eq!(storage.ip4.unwrap(), Ipv4Addr::from([127, 0, 0, 1]));
         assert_eq!(
             storage.public_key_value.unwrap(),
@@ -255,7 +255,7 @@ mod tests {
 
         let storage = Storage::from_rlp::<Schemev4>(&mut &rlp_data[0..size]).unwrap();
         assert_eq!(storage.seq, seq);
-        assert_eq!(storage.id.unwrap(), "v4");
+        assert_eq!(storage.id.unwrap(), b"v4");
         assert_eq!(
             storage.public_key_value.unwrap(),
             Schemev4::public_key_to_value(&public_key)

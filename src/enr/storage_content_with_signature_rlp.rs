@@ -8,7 +8,11 @@ use super::scheme::Scheme;
 use super::storage::Storage;
 use super::storage_rlp_encoding::RlpEncodingError;
 
-pub(crate) const MAXIMUM_ENCODED_BYTE_LENGTH: usize = 300;
+pub(crate) const MAXIMUM_RLP_ENCODED_BYTE_LENGTH: usize = 300;
+
+// The largest value of `a` that
+// `URL_SAFE_CONFIG.decoded_length_estimate(a).decoded_length_estimate() <= MAXIMUM_RLP_ENCODED_BYTE_LENGTH`
+pub(crate) const MAXIMUM_BASE64_ENCODED_BYTE_LENGTH: usize = 400;
 
 #[derive(Debug)]
 pub(crate) struct StorageWithSignatureRlp(pub(crate) Vec<u8>);
@@ -22,10 +26,33 @@ impl Storage {
         debug_assert!(self.signature_value.is_some());
 
         let rlp = self.to_rlp::<S>(true);
-        if rlp.len() > MAXIMUM_ENCODED_BYTE_LENGTH {
+        if rlp.len() > MAXIMUM_RLP_ENCODED_BYTE_LENGTH {
             return Err(RlpEncodingError::MaximumEncodedByteLengthExceeded);
         }
 
         Ok(StorageWithSignatureRlp(self.to_rlp::<S>(true)))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::enr::base64::URL_SAFE_CONFIG;
+    use base64::engine::{DecodeEstimate, Engine};
+
+    #[test]
+    fn test_maximum_base64_encoded_byte_length() {
+        assert!(
+            URL_SAFE_CONFIG
+                .decoded_length_estimate(MAXIMUM_BASE64_ENCODED_BYTE_LENGTH)
+                .decoded_length_estimate()
+                <= MAXIMUM_RLP_ENCODED_BYTE_LENGTH
+        );
+        assert!(
+            URL_SAFE_CONFIG
+                .decoded_length_estimate(MAXIMUM_BASE64_ENCODED_BYTE_LENGTH + 1)
+                .decoded_length_estimate()
+                > MAXIMUM_RLP_ENCODED_BYTE_LENGTH
+        );
     }
 }

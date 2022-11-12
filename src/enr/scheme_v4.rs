@@ -11,6 +11,7 @@ use sha3::{Digest, Keccak256};
 
 #[cfg(test)]
 use self::MockOsRng as OsRng;
+use crate::enr::predefined_keys::SCHEME4_PUBLIC_KEY_KEY;
 #[cfg(not(test))]
 use rand::rngs::OsRng;
 
@@ -23,12 +24,12 @@ impl Scheme for Schemev4 {
     type SigningError = secp256k1::Error;
     type VerifyingError = secp256k1::Error;
 
-    fn id() -> &'static str {
-        "v4"
+    fn id() -> &'static [u8] {
+        b"v4"
     }
 
-    fn public_key_key() -> &'static str {
-        "secp256k1"
+    fn public_key_key() -> &'static [u8] {
+        SCHEME4_PUBLIC_KEY_KEY
     }
 
     fn value_to_public_key(value: &[u8]) -> Option<Self::PublicKey> {

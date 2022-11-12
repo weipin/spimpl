@@ -17,127 +17,92 @@ impl Storage {
         // content = [signature, seq, k, v, ...]
 
         // TODO: with_capacity
-        let mut rlp_data = BytesMut::new();
+        let mut rlp_header_data = BytesMut::new();
+        let mut rlp_items_data = BytesMut::new();
+        let mut header = Header {
+            list: true,
+            payload_length: 0,
+        };
 
         // The key/value pairs must be sorted by key and must be unique
         // order:
         // id, ip, ip6, secp256k1, tcp, tcp6, udp, udp6
 
-        // Header
-        let mut h = Header {
-            list: true,
-            payload_length: 0,
-        };
         // signature
         if with_signature {
             debug_assert!(self.signature_value.is_some());
-            h.payload_length += self.signature_value.as_ref().unwrap().as_slice().length();
+            let signature_value = self.signature_value.as_ref().unwrap().as_slice();
+            header.payload_length += signature_value.length();
+            signature_value.encode(&mut rlp_items_data);
         }
 
         // seq
-        h.payload_length += self.seq.length();
+        header.payload_length += self.seq.length();
+        self.seq.encode(&mut rlp_items_data);
 
         // id
-        h.payload_length += ID_KEY.length();
-        h.payload_length += S::id().as_bytes().length();
-        // ip
-        if let Some(ip4) = self.ip4 {
-            h.payload_length += IP4_KEY.length();
-            h.payload_length += ip4.octets().length();
-        }
-        // ip6
-        if let Some(ip6) = self.ip6 {
-            h.payload_length += IP6_KEY.length();
-            h.payload_length += ip6.octets().length();
-        }
-        // public key value (secp256k1)
-        h.payload_length += S::public_key_key().as_bytes().length();
-        h.payload_length += (self.public_key_value.as_ref().unwrap() as &[u8]).length();
-        // tcp
-        if let Some(tcp4) = self.tcp4 {
-            h.payload_length += TCP4_KEY.length();
-            h.payload_length += tcp4.length();
-        }
-        // tcp6
-        if let Some(tcp6) = self.tcp6 {
-            h.payload_length += TCP6_KEY.length();
-            h.payload_length += tcp6.length();
-        }
-        // udp
-        if let Some(udp4) = self.udp4 {
-            h.payload_length += UDP4_KEY.length();
-            h.payload_length += udp4.length();
-        }
-        // udp6
-        if let Some(udp6) = self.udp6 {
-            h.payload_length += UDP6_KEY.length();
-            h.payload_length += udp6.length();
-        }
-
-        // Encodes header
-        h.encode(&mut rlp_data);
-
-        // Encodes items
-        // signature
-        if with_signature {
-            debug_assert!(self.signature_value.is_some());
-            self.signature_value
-                .as_ref()
-                .unwrap()
-                .as_slice()
-                .encode(&mut rlp_data);
-        }
-        // seq
-        self.seq.encode(&mut rlp_data);
-
-        // id
-        ID_KEY.encode(&mut rlp_data);
-        S::id().as_bytes().encode(&mut rlp_data);
+        header.payload_length += ID_KEY.length();
+        header.payload_length += S::id().length();
+        ID_KEY.encode(&mut rlp_items_data);
+        S::id().encode(&mut rlp_items_data);
 
         // ip
         if let Some(ip4) = self.ip4 {
-            IP4_KEY.encode(&mut rlp_data);
-            ip4.octets().encode(&mut rlp_data);
+            header.payload_length += IP4_KEY.length();
+            header.payload_length += ip4.octets().length();
+            IP4_KEY.encode(&mut rlp_items_data);
+            ip4.octets().encode(&mut rlp_items_data);
         }
 
         // ip6
         if let Some(ip6) = self.ip6 {
-            IP6_KEY.encode(&mut rlp_data);
-            ip6.octets().encode(&mut rlp_data);
+            header.payload_length += IP6_KEY.length();
+            header.payload_length += ip6.octets().length();
+            IP6_KEY.encode(&mut rlp_items_data);
+            ip6.octets().encode(&mut rlp_items_data);
         }
 
         // public key value (secp256k1)
-        S::public_key_key().as_bytes().encode(&mut rlp_data);
-        self.public_key_value
-            .as_ref()
-            .unwrap()
-            .as_slice()
-            .encode(&mut rlp_data);
+        let public_key_value = self.public_key_value.as_ref().unwrap().as_slice();
+        header.payload_length += S::public_key_key().length();
+        header.payload_length += public_key_value.length();
+        S::public_key_key().encode(&mut rlp_items_data);
+        public_key_value.encode(&mut rlp_items_data);
 
         // tcp
         if let Some(tcp4) = self.tcp4 {
-            TCP4_KEY.encode(&mut rlp_data);
-            tcp4.encode(&mut rlp_data);
+            header.payload_length += TCP4_KEY.length();
+            header.payload_length += tcp4.length();
+            TCP4_KEY.encode(&mut rlp_items_data);
+            tcp4.encode(&mut rlp_items_data);
         }
 
         // tcp6
         if let Some(tcp6) = self.tcp6 {
-            TCP6_KEY.encode(&mut rlp_data);
-            tcp6.encode(&mut rlp_data);
+            header.payload_length += TCP6_KEY.length();
+            header.payload_length += tcp6.length();
+            TCP6_KEY.encode(&mut rlp_items_data);
+            tcp6.encode(&mut rlp_items_data);
         }
 
         // udp
         if let Some(udp4) = self.udp4 {
-            UDP4_KEY.encode(&mut rlp_data);
-            udp4.encode(&mut rlp_data);
-        }
-        // udp6
-        if let Some(udp6) = self.udp6 {
-            UDP6_KEY.encode(&mut rlp_data);
-            udp6.encode(&mut rlp_data);
+            header.payload_length += UDP4_KEY.length();
+            header.payload_length += udp4.length();
+            UDP4_KEY.encode(&mut rlp_items_data);
+            udp4.encode(&mut rlp_items_data);
         }
 
-        rlp_data.to_vec()
+        // udp6
+        if let Some(udp6) = self.udp6 {
+            header.payload_length += UDP6_KEY.length();
+            header.payload_length += udp6.length();
+            UDP6_KEY.encode(&mut rlp_items_data);
+            udp6.encode(&mut rlp_items_data);
+        }
+
+        header.encode(&mut rlp_header_data);
+        [rlp_header_data, rlp_items_data].concat()
     }
 }
 
@@ -159,7 +124,7 @@ mod tests {
         let mut builder = Builder::new();
         builder.with_signature_value(hex!("7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c").to_vec())
             .with_seq(1)
-            .with_id("v4")
+            .with_id(b"v4")
             .with_ip4(Ipv4Addr::from([127, 0, 0, 1]))
             .with_udp4(30303)
             .with_public_key_value(hex!("03ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138").to_vec());

@@ -13,7 +13,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 pub(crate) struct Storage {
     pub(crate) signature_value: Option<Vec<u8>>,
     pub(crate) seq: SequenceNumber,
-    pub(crate) id: Option<&'static str>,
+    pub(crate) id: Option<&'static [u8]>,
     pub(crate) public_key_value: Option<Vec<u8>>,
     pub(crate) ip4: Option<Ipv4Addr>,
     pub(crate) tcp4: Option<u16>,

@@ -10,6 +10,7 @@ use super::storage::Storage;
 use super::storage_content_with_signature_rlp::StorageWithSignatureRlp;
 use super::storage_rlp_decoding::RlpDecodingError;
 use super::storage_rlp_encoding::RlpEncodingError;
+use crate::enr::output::{maximum_base64_encoded_output, maximum_rlp_encoded_output};
 
 pub(crate) const TEXTUAL_FORM_PREFIX: &str = "enr:";
 
@@ -19,7 +20,22 @@ impl Record {
     }
 
     pub fn from_textual_form<S: Scheme>(textual_form: &str) -> Result<Record, RlpDecodingError> {
-        let storage_with_signature_rlp = StorageWithSignatureRlp::from_textual_form(textual_form)?;
+        let mut intermediate_decoding_output = maximum_rlp_encoded_output();
+        Self::from_textual_form_with_intermediate_decoding_output::<S>(
+            textual_form,
+            &mut intermediate_decoding_output,
+        )
+    }
+
+    pub fn from_textual_form_with_intermediate_decoding_output<S: Scheme>(
+        textual_form: &str,
+        intermediate_decoding_output: &mut [u8],
+    ) -> Result<Record, RlpDecodingError> {
+        let storage_with_signature_rlp =
+            StorageWithSignatureRlp::from_textual_form_with_intermediate_decoding_output(
+                textual_form,
+                intermediate_decoding_output,
+            )?;
         let storage = Storage::from_rlp::<S>(&mut storage_with_signature_rlp.0.as_slice())?;
         if storage.encode_content_to_rlp::<S>().verify::<S>(
             storage.signature_value.as_ref().unwrap(),
@@ -31,7 +47,6 @@ impl Record {
         }
     }
 }
-
 impl Storage {
     pub(crate) fn textual_form<S: Scheme>(&self) -> Result<String, RlpEncodingError> {
         let rlp = self.encode_content_with_signature_to_rlp::<S>()?;
@@ -43,15 +58,19 @@ impl StorageWithSignatureRlp {
     pub(crate) fn to_textual_form(&self) -> String {
         // The textual form of a node record is the base64 encoding of its RLP representation,
         // prefixed by enr:
-        let base64 = self.to_base64();
-        TEXTUAL_FORM_PREFIX.to_string() + &String::from_utf8(base64).unwrap()
+        let mut output = maximum_base64_encoded_output();
+        let base64 = self.to_base64(&mut output);
+        TEXTUAL_FORM_PREFIX.to_string() + &String::from_utf8_lossy(base64)
     }
 
-    pub(crate) fn from_textual_form(s: &str) -> Result<Self, RlpDecodingError> {
+    pub(crate) fn from_textual_form_with_intermediate_decoding_output(
+        s: &str,
+        intermediate_decoding_output: &mut [u8],
+    ) -> Result<Self, RlpDecodingError> {
         let base64 = s
             .strip_prefix(TEXTUAL_FORM_PREFIX)
             .ok_or(RlpDecodingError::InvalidFormat)?;
-        Self::from_base64(base64)
+        Self::from_base64(base64, intermediate_decoding_output)
     }
 }
 

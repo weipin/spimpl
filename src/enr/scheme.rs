@@ -11,8 +11,8 @@ pub trait Scheme {
     type SigningError;
     type VerifyingError;
 
-    fn id() -> &'static str;
-    fn public_key_key() -> &'static str;
+    fn id() -> &'static [u8];
+    fn public_key_key() -> &'static [u8];
 
     fn value_to_public_key(value: &[u8]) -> Option<Self::PublicKey>;
     fn public_key_to_value(public_key: &Self::PublicKey) -> Vec<u8>;
