@@ -4,10 +4,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements the struct representing "signature + content" RLP.
+
 use super::scheme::Scheme;
 use super::storage::Storage;
 use super::storage_rlp_encoding::RlpEncodingError;
 
+// The maximum encoded size of a node record is 300 bytes.
 pub(crate) const MAXIMUM_RLP_ENCODED_BYTE_LENGTH: usize = 300;
 
 // The largest value of `a` that

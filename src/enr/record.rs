@@ -4,9 +4,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements `Record`.
+
 use super::storage::Storage;
 use std::net::Ipv4Addr;
 
+/// To create a `Record`, use `Builder`.
 #[derive(Debug)]
 pub struct Record(pub(crate) Storage);
 

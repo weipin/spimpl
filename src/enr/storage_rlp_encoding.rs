@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements storage RLP encoding.
+
 use super::predefined_keys::{ID_KEY, IP4_KEY, IP6_KEY, TCP4_KEY, TCP6_KEY, UDP4_KEY, UDP6_KEY};
 use super::scheme::Scheme;
 use super::storage::Storage;
@@ -14,7 +16,6 @@ impl Storage {
     pub(crate) fn to_rlp<S: Scheme>(&self, with_signature: bool) -> Vec<u8> {
         debug_assert!(self.id.is_some());
         debug_assert!(self.public_key_value.is_some());
-        // content = [signature, seq, k, v, ...]
 
         // TODO: with_capacity
         let mut rlp_header_data = BytesMut::new();
@@ -24,10 +25,7 @@ impl Storage {
             payload_length: 0,
         };
 
-        // The key/value pairs must be sorted by key and must be unique
-        // order:
-        // id, ip, ip6, secp256k1, tcp, tcp6, udp, udp6
-
+        // [signature, seq, k, v, ...]
         // signature
         if with_signature {
             debug_assert!(self.signature_value.is_some());
@@ -39,6 +37,9 @@ impl Storage {
         // seq
         header.payload_length += self.seq.length();
         self.seq.encode(&mut rlp_items_data);
+
+        // The key/value pairs must be sorted by key and must be unique:
+        // id, ip, ip6, secp256k1, tcp, tcp6, udp, udp6
 
         // id
         header.payload_length += ID_KEY.length();

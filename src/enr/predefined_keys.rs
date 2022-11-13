@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/// Pre-defined keys.
+
 pub(crate) const ID_KEY: &[u8] = b"id";
 pub(crate) const IP4_KEY: &[u8] = b"ip";
 pub(crate) const TCP4_KEY: &[u8] = b"tcp";

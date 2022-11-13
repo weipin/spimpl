@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Textual form ("enr:xxx") related functions.
+
 use super::record::Record;
 use super::scheme::Scheme;
 use super::storage::Storage;
@@ -15,10 +17,12 @@ use crate::enr::output::{maximum_base64_encoded_output, maximum_rlp_encoded_outp
 pub(crate) const TEXTUAL_FORM_PREFIX: &str = "enr:";
 
 impl Record {
+    /// Returns the textual form of the `Record`.
     pub fn textual_form<S: Scheme>(&self) -> Result<String, RlpEncodingError> {
         self.0.textual_form::<S>()
     }
 
+    /// Creates a `Record` from `textual_form`.
     pub fn from_textual_form<S: Scheme>(textual_form: &str) -> Result<Record, RlpDecodingError> {
         let mut intermediate_decoding_output = maximum_rlp_encoded_output();
         Self::from_textual_form_with_intermediate_decoding_output::<S>(
@@ -27,6 +31,11 @@ impl Record {
         )
     }
 
+    /// Creates a `Record` from `textual_form`.
+    ///
+    /// The parameter `intermediate_decoding_output` is passed to avoid repeatedly memory allocating.
+    /// It isn't thread-safe and will panic if the size isn't large enough. Normally the return value
+    /// of `maximum_rlp_encoded_output` can be used as this output.
     pub fn from_textual_form_with_intermediate_decoding_output<S: Scheme>(
         textual_form: &str,
         intermediate_decoding_output: &mut [u8],
@@ -47,6 +56,7 @@ impl Record {
         }
     }
 }
+
 impl Storage {
     pub(crate) fn textual_form<S: Scheme>(&self) -> Result<String, RlpEncodingError> {
         let rlp = self.encode_content_with_signature_to_rlp::<S>()?;
@@ -60,7 +70,7 @@ impl StorageWithSignatureRlp {
         // prefixed by enr:
         let mut output = maximum_base64_encoded_output();
         let base64 = self.to_base64(&mut output);
-        TEXTUAL_FORM_PREFIX.to_string() + &String::from_utf8_lossy(base64)
+        [TEXTUAL_FORM_PREFIX, &String::from_utf8_lossy(base64)].concat()
     }
 
     pub(crate) fn from_textual_form_with_intermediate_decoding_output(
@@ -108,14 +118,33 @@ mod tests {
             ("enr:xx", RlpDecodingError::InvalidFormat),
             ("ENR:xx", RlpDecodingError::InvalidFormat),
             (
+                // Replaces "...Ay5..." to "...ay5...", making the signature invalid
                 concat!(
-                    // replaces "...Ay5..." to "...ay5...", making the signature invalid
                     //                      ___
                     "enr:-IS4QHCYrYZbAKWCBRlay5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjz",
                     "CBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1Nmsx",
                     "oQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8"
                 ),
                 RlpDecodingError::InvalidSignature,
+            ),
+            (
+                // Replaces "seq" 0x01 with 0x0001 for a leading zero byte.
+                //
+                // ```
+                // seq = bytes.fromhex('0001')  # replaces 0x01
+                // rlp_data = encode(
+                //     [
+                //         0x7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c,
+                //         seq, 'id', 'v4', 'ip', 0x7f000001, 'secp256k1', bytes.fromhex(
+                //         '03ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138'), 'udp', 0x765f])
+                // textual_form = "enr:" + urlsafe_b64encode(rlp_data).decode('utf-8').rstrip('=')
+                // print(textual_form)
+                concat!(
+                    "enr:-Ia4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjz",
+                    "CBOonrkTfj499SZuOh8R33Ls8RRcy5yCAAGCaWSCdjSCaXCEfwAAAYlzZWNwMjU2",
+                    "azGhA8pjTK4NSay0Adikxrb-jFW3DRFb9AB2nMFADzJYzTE4g3VkcIJ2Xw"
+                ),
+                RlpDecodingError::DecodingRLPError(fastrlp::DecodeError::LeadingZero),
             ),
         ];
 

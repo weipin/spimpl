@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements the builder pattern for `Record` creation.
+
 use super::record::Record;
 use super::scheme::Scheme;
 use super::storage::Storage;
@@ -12,6 +14,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 pub struct Builder(pub(crate) Storage);
 
 impl Builder {
+    /// Creates a new `Record` with the specified private key and public key.
     pub fn sign_and_build<S: Scheme>(
         &mut self,
         private_key: &S::PrivateKey,

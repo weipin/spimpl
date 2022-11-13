@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements `PublishableRecord`, the mutable version of `Record`.
+
 use super::record::Record;
 use super::scheme::Scheme;
 use super::storage::Storage;
@@ -14,10 +16,14 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 
 pub struct PublishableRecord {
     storage: Storage,
+
+    // A "cached" content RLP. Comparing it with the current encoding result,
+    // we can detect if the content has changed.
     previous_storage_content_rlp: Option<StorageContentRlp>,
 }
 
 impl PublishableRecord {
+    /// Creates a new `PublishableRecord` from the specified `Record`.
     fn from_record(record: Record) -> PublishableRecord {
         PublishableRecord {
             storage: record.0,
@@ -33,6 +39,15 @@ impl PublishableRecord {
         self.storage.ip6 = Some(ip6);
     }
 
+    /// Returns a tuple with:
+    /// - the sequence number of the record
+    /// - the textual form of the record
+    ///
+    /// The sequence number will be increased by 1 if the record content has changed.
+    ///
+    /// This method always performs a RLP encoding upon the record content.
+    /// If you are certain that the content doesn't change since the last publishing,
+    /// consider using the previously returned values to avoid the encoding operation.
     pub fn publish<S: Scheme>(&mut self) -> Result<(SequenceNumber, String), RlpEncodingError> {
         let content_rlp = self.storage.encode_content_to_rlp::<S>();
         match self.previous_storage_content_rlp {
@@ -54,6 +69,7 @@ impl PublishableRecord {
 }
 
 impl Record {
+    /// Converts to a `PublishableRecord`.
     pub fn to_publishable(self) -> PublishableRecord {
         PublishableRecord::from_record(self)
     }

@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements the struct representing content RLP.
+
 use super::scheme::Scheme;
 use super::storage::Storage;
 use super::storage_rlp_decoding::RlpDecodingError;
@@ -17,11 +19,9 @@ impl Storage {
         &mut self,
         public_key: &S::PublicKey,
     ) -> StorageContentRlp {
-        // Updates id
         debug_assert!(self.id.is_none() || self.id.unwrap() == S::id());
         self.id = Some(S::id());
 
-        // Updates public key value
         self.public_key_value = Some(S::public_key_to_value(public_key));
 
         self.encode_content_to_rlp::<S>()
@@ -36,6 +36,7 @@ impl Storage {
 }
 
 impl StorageContentRlp {
+    /// Signs the content RLP.
     pub(crate) fn sign<S: Scheme>(
         &self,
         private_key: &S::PrivateKey,
@@ -46,6 +47,7 @@ impl StorageContentRlp {
 }
 
 impl StorageContentRlp {
+    /// Verifies the content RLP.
     pub(crate) fn verify<S: Scheme>(
         &self,
         signature_value: &[u8],

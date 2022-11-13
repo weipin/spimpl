@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements storage RLP decoding.
+
 use super::builder::Builder;
 use super::predefined_keys::{ID_KEY, IP4_KEY, IP6_KEY, TCP4_KEY, TCP6_KEY, UDP4_KEY, UDP6_KEY};
 use super::scheme::Scheme;
@@ -14,13 +16,12 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 
 impl Storage {
     pub(crate) fn from_rlp<S: Scheme>(buf: &mut &[u8]) -> Result<Storage, RlpDecodingError> {
-        // TODO: this is a mess
-        let h = Header::decode(buf).map_err(RlpDecodingError::DecodingRLPError)?;
-        if !h.list {
+        let header = Header::decode(buf).map_err(RlpDecodingError::DecodingRLPError)?;
+        if !header.list {
             return Err(RlpDecodingError::InvalidFormat);
         }
 
-        let payload_view = &mut &buf[..h.payload_length];
+        let payload_view = &mut &buf[..header.payload_length];
         if payload_view.is_empty() {
             return Err(RlpDecodingError::EmptyPayload);
         }
@@ -43,6 +44,7 @@ impl Storage {
         while !payload_view.is_empty() {
             let key = Bytes::decode(payload_view).map_err(RlpDecodingError::DecodingRLPError)?;
             if key <= previous_key {
+                // The key/value pairs must be sorted by key and must be unique
                 return Err(RlpDecodingError::KeyNotInOrderOrDuplicate);
             }
             previous_key = key.clone();
@@ -100,12 +102,12 @@ impl Storage {
                 }
                 _ => {
                     // unknown pair
-                    let h =
+                    let header =
                         Header::decode(payload_view).map_err(RlpDecodingError::DecodingRLPError)?;
-                    if h.list {
+                    if header.list {
                         return Err(RlpDecodingError::InvalidPair);
                     }
-                    payload_view.advance(h.payload_length);
+                    payload_view.advance(header.payload_length);
                 }
             }
         } // while payload_view.is_empty
@@ -159,10 +161,10 @@ pub enum RlpDecodingError {
     #[error("Invalid ip6 octets")]
     InvalidIp6Octets,
 
-    #[error("Convert from value to signature failed")]
+    #[error("Converting from value to signature failed")]
     InvalidSignatureValue,
 
-    #[error("Convert from value to public key failed")]
+    #[error("Converting from value to public key failed")]
     InvalidPublicKeyValue,
 
     #[error("Invalid signature")]

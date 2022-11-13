@@ -12,11 +12,16 @@ use base64::engine::fast_portable::{FastPortable, FastPortableConfig};
 use base64::{decode_engine_slice, encode_engine_slice};
 
 impl StorageWithSignatureRlp {
+    /// Encodes the `StorageWithSignatureRlp` to its base64 form
+    /// and returns the slice of the `output` that contains the base64 characters.
+    /// Will panic if `output` isn't large enough.
     pub(crate) fn to_base64<'a>(&self, output: &'a mut [u8]) -> &'a [u8] {
         let size = encode_engine_slice(&self.0, output, &URL_SAFE_CONFIG);
         &output[0..size]
     }
 
+    /// Creates a `StorageWithSignatureRlp` from its base64 form.
+    /// Will panics if `intermediate_decoding_output` isn't large enough.
     pub(crate) fn from_base64(
         s: &str,
         intermediate_decoding_output: &mut [u8],

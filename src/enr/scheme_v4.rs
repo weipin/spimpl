@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Implements the “v4” scheme.
+
 use super::scheme::Scheme;
 use rand::RngCore;
 use secp256k1::{ecdsa, Message, SECP256K1};
@@ -16,6 +18,13 @@ use crate::enr::predefined_keys::SCHEME4_PUBLIC_KEY_KEY;
 use rand::rngs::OsRng;
 
 pub struct Schemev4;
+
+// Compressed secp256k1 public key, 33 bytes
+const COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH: usize = 33;
+
+// The resulting 64-byte signature is encoded as the concatenation of the r and s signature values
+// (the recovery ID v is omitted).
+const COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH: usize = 64;
 
 impl Scheme for Schemev4 {
     type PrivateKey = secp256k1::SecretKey;
@@ -33,19 +42,29 @@ impl Scheme for Schemev4 {
     }
 
     fn value_to_public_key(value: &[u8]) -> Option<Self::PublicKey> {
+        if value.len() != COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH {
+            return None;
+        }
         secp256k1::PublicKey::from_slice(value).ok()
     }
 
     fn public_key_to_value(public_key: &Self::PublicKey) -> Vec<u8> {
-        public_key.serialize().to_vec()
+        let value = public_key.serialize().to_vec();
+        debug_assert_eq!(value.len(), COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH);
+        value
     }
 
     fn value_to_signature(value: &[u8]) -> Option<Self::Signature> {
+        if value.len() != COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH {
+            return None;
+        }
         ecdsa::Signature::from_compact(value).ok()
     }
 
     fn signature_to_value(signature: &Self::Signature) -> Vec<u8> {
-        signature.serialize_compact().to_vec()
+        let value = signature.serialize_compact().to_vec();
+        debug_assert_eq!(value.len(), COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH);
+        value
     }
 
     fn sign(

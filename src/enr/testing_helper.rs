@@ -4,17 +4,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-// The one from the spec:
-// https://github.com/ethereum/devp2p/blob/master/enr.md
+// Example node from the spec.
 pub(crate) const EXAMPLE_RECORD_ADDRESS: &str = concat!(
     "enr:-IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjz",
     "CBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1Nmsx",
     "oQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8",
 );
 
-// Uses the example record from the ENR spec.
-//
-// This implementation creates ECDSA signatures with additional random data.
+// The “v4” scheme implementation creates ECDSA signatures with additional random data.
 // Under the unit testing environment, the mock value `MOCK_ECDSA_NONCE_ADDITIONAL_DATA`
 // is always used.
 //

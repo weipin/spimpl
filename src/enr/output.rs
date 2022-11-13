@@ -4,6 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+//! Functions for common output buffer creation.
+
 use super::storage_content_with_signature_rlp::MAXIMUM_BASE64_ENCODED_BYTE_LENGTH;
 use super::storage_content_with_signature_rlp::MAXIMUM_RLP_ENCODED_BYTE_LENGTH;
 
