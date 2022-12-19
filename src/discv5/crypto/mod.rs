@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-pub mod discv5;
-pub mod enr;
-#[cfg(test)]
-mod testing_utils;
-mod utils;
+pub(crate) mod aesctr;
+pub(crate) mod aesgcm;
+pub(crate) mod ecdh;
+pub(crate) mod id_nonce_signing;
+pub(crate) mod keys_deriving;

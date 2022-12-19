@@ -4,8 +4,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-pub mod discv5;
-pub mod enr;
-#[cfg(test)]
-mod testing_utils;
-mod utils;
+pub(crate) mod encrypt;
+pub(crate) mod protocol;
+pub(crate) mod types;
+
+pub(crate) use encrypt::encrypt;
+pub(crate) use types::{Nonce, RequestId};

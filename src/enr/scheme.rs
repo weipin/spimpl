@@ -6,12 +6,23 @@
 
 //! The trait for "identity scheme".
 
+use super::types::NodeId;
+
 pub trait Scheme {
     type PrivateKey;
     type PublicKey;
     type Signature;
     type SigningError;
     type VerifyingError;
+
+    /// Public key length in bytes.
+    const ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH: usize;
+
+    /// Signature length in bytes.
+    const ENR_REQUIRED_SIGNATURE_BYTE_LENGTH: usize;
+
+    /// ECDH shared secret length in bytes.
+    const DISCV5_REQUIRED_SHARED_SECRET_BYTE_LENGTH: usize;
 
     /// Returns the name of identity scheme.
     fn id() -> &'static [u8];
@@ -24,6 +35,9 @@ pub trait Scheme {
 
     /// Converts a Self::PublicKey to bytes.
     fn public_key_to_value(public_key: &Self::PublicKey) -> Vec<u8>;
+
+    /// Converts bytes to a `Self::PrivateKey`.
+    fn value_to_private_key(value: &[u8]) -> Option<Self::PrivateKey>;
 
     /// Converts bytes to a `Self::Signature`.
     fn value_to_signature(value: &[u8]) -> Option<Self::Signature>;
@@ -45,5 +59,8 @@ pub trait Scheme {
     ) -> Result<bool, Self::VerifyingError>;
 
     /// Constructs a node ID.
-    fn construct_node_id(public_key: &Self::PublicKey) -> String;
+    fn construct_node_id(public_key: &Self::PublicKey) -> NodeId;
+
+    /// Creates a shared secret through Diffie-Hellman key agreement
+    fn ecdh(point: &Self::PublicKey, scalar: &Self::PrivateKey) -> Vec<u8>;
 }

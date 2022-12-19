@@ -28,4 +28,6 @@ mod types;
 pub use builder::Builder;
 pub use publishable_record::PublishableRecord;
 pub use record::Record;
+pub use scheme::Scheme;
 pub use scheme_v4::Schemev4;
+pub use types::{NodeId, SequenceNumber};

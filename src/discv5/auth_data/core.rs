@@ -4,8 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-pub mod discv5;
-pub mod enr;
-#[cfg(test)]
-mod testing_utils;
-mod utils;
+pub(crate) trait AuthDataSource {
+    const SIZE: AuthDataSize;
+
+    fn append_data_to_buffer(&self, buffer: &mut Vec<u8>);
+}
+
+pub(crate) type AuthDataSize = u16;

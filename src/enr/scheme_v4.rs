@@ -13,18 +13,12 @@ use sha3::{Digest, Keccak256};
 
 #[cfg(test)]
 use self::MockOsRng as OsRng;
+use super::types::NodeId;
 use crate::enr::predefined_keys::SCHEME4_PUBLIC_KEY_KEY;
 #[cfg(not(test))]
 use rand::rngs::OsRng;
 
 pub struct Schemev4;
-
-// Compressed secp256k1 public key, 33 bytes
-const COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH: usize = 33;
-
-// The resulting 64-byte signature is encoded as the concatenation of the r and s signature values
-// (the recovery ID v is omitted).
-const COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH: usize = 64;
 
 impl Scheme for Schemev4 {
     type PrivateKey = secp256k1::SecretKey;
@@ -32,6 +26,14 @@ impl Scheme for Schemev4 {
     type Signature = ecdsa::Signature;
     type SigningError = secp256k1::Error;
     type VerifyingError = secp256k1::Error;
+
+    // Compressed secp256k1 public key, 33 bytes
+    const ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH: usize = 33;
+    // The resulting 64-byte signature is encoded as the concatenation of the r and s signature values
+    // (the recovery ID v is omitted).
+    const ENR_REQUIRED_SIGNATURE_BYTE_LENGTH: usize = 64;
+    // Compressed shared secret, 33 bytes
+    const DISCV5_REQUIRED_SHARED_SECRET_BYTE_LENGTH: usize = 33;
 
     fn id() -> &'static [u8] {
         b"v4"
@@ -42,7 +44,7 @@ impl Scheme for Schemev4 {
     }
 
     fn value_to_public_key(value: &[u8]) -> Option<Self::PublicKey> {
-        if value.len() != COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH {
+        if value.len() != Self::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH {
             return None;
         }
         secp256k1::PublicKey::from_slice(value).ok()
@@ -50,12 +52,16 @@ impl Scheme for Schemev4 {
 
     fn public_key_to_value(public_key: &Self::PublicKey) -> Vec<u8> {
         let value = public_key.serialize().to_vec();
-        debug_assert_eq!(value.len(), COMPRESSED_SECP256K1_PUBLIC_KEY_BYTE_LENGTH);
+        debug_assert_eq!(value.len(), Self::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH);
         value
     }
 
+    fn value_to_private_key(value: &[u8]) -> Option<Self::PrivateKey> {
+        secp256k1::SecretKey::from_slice(value).ok()
+    }
+
     fn value_to_signature(value: &[u8]) -> Option<Self::Signature> {
-        if value.len() != COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH {
+        if value.len() != Self::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH {
             return None;
         }
         ecdsa::Signature::from_compact(value).ok()
@@ -63,7 +69,7 @@ impl Scheme for Schemev4 {
 
     fn signature_to_value(signature: &Self::Signature) -> Vec<u8> {
         let value = signature.serialize_compact().to_vec();
-        debug_assert_eq!(value.len(), COMPACT_SECP256K1_SIGNATURE_BYTE_LENGTH);
+        debug_assert_eq!(value.len(), Self::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH);
         value
     }
 
@@ -75,7 +81,8 @@ impl Scheme for Schemev4 {
         let signature = {
             let mut noncedata = [0; 32];
             OsRng.fill_bytes(&mut noncedata);
-            SECP256K1.sign_ecdsa_with_noncedata(&msg, private_key, &noncedata)
+            // SECP256K1.sign_ecdsa_with_noncedata(&msg, private_key, &noncedata)
+            SECP256K1.sign_ecdsa(&msg, private_key)
         };
 
         Ok(signature)
@@ -90,12 +97,27 @@ impl Scheme for Schemev4 {
         Ok(SECP256K1.verify_ecdsa(&msg, signature, public_key).is_ok())
     }
 
-    fn construct_node_id(public_key: &Self::PublicKey) -> String {
+    fn construct_node_id(public_key: &Self::PublicKey) -> NodeId {
         // keccak256(x || y)
         // uncompressed keys are 65 bytes, consisting of constant prefix (0x04)
         let uncompressed = &public_key.serialize_uncompressed()[1..];
-        let hash = Keccak256::digest(uncompressed);
-        hex::encode(hash)
+        NodeId(Keccak256::digest(uncompressed).into())
+    }
+
+    fn ecdh(point: &Self::PublicKey, scalar: &Self::PrivateKey) -> Vec<u8> {
+        let mut compressed_shared_secret =
+            Vec::with_capacity(Self::DISCV5_REQUIRED_SHARED_SECRET_BYTE_LENGTH);
+        let shared_secret_point = secp256k1::ecdh::shared_secret_point(point, scalar);
+
+        if shared_secret_point.last().unwrap() & 1 == 0 {
+            // even
+            compressed_shared_secret.push(2);
+        } else {
+            // odd
+            compressed_shared_secret.push(3);
+        }
+        compressed_shared_secret.extend(&shared_secret_point[..32]);
+        compressed_shared_secret
     }
 }
 
@@ -142,7 +164,7 @@ mod tests {
         let node_id = Schemev4::construct_node_id(&public_key);
 
         assert_eq!(
-            node_id,
+            hex::encode(node_id.0),
             "a448f24c6d18e575453db13171562b71999873db5b286df957af199ec94617f7"
         );
     }

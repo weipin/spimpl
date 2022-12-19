@@ -181,7 +181,7 @@ mod tests {
     use crate::enr::builder::Builder;
     use crate::enr::textual_form::TEXTUAL_FORM_PREFIX;
     use crate::enr::Schemev4;
-    use crate::testing_helper::quickcheck_ip_addr_octets::{Ipv4AddrOctets, Ipv6AddrOctets};
+    use crate::testing_utils::quickcheck_ip_addr_octets::{Ipv4AddrOctets, Ipv6AddrOctets};
     use ::quickcheck_macros::quickcheck;
     use base64::decode_engine_slice;
     use hex_literal::hex;

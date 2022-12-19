@@ -90,7 +90,7 @@ mod tests {
     use crate::enr::builder::Builder;
     use crate::enr::testing_helper::EXAMPLE_RECORD_ADDRESS;
     use crate::enr::Schemev4;
-    use crate::testing_helper::quickcheck_ip_addr_octets::{Ipv4AddrOctets, Ipv6AddrOctets};
+    use crate::testing_utils::quickcheck_ip_addr_octets::{Ipv4AddrOctets, Ipv6AddrOctets};
     use fastrlp::DecodeError::InputTooShort;
     use hex_literal::hex;
     use quickcheck_macros::quickcheck;
