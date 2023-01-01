@@ -20,7 +20,7 @@ pub(crate) fn pack_message<M: Message>(
     dest_id: &NodeId,
     nonce: &message::Nonce,
     masking_iv: &MaskingIv,
-    initiator_key: &[u8]
+    initiator_key: &[u8],
 ) -> Vec<u8> {
     let encrypted_message_data = message::encrypt(
         message,
@@ -28,6 +28,11 @@ pub(crate) fn pack_message<M: Message>(
         nonce,
         masking_iv,
         initiator_key,
+    );
+
+    println!(
+        ">> encrypted_message_data: {}",
+        hex::encode(&encrypted_message_data)
     );
 
     let mut packet_data = Vec::new();

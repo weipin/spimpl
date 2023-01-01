@@ -7,6 +7,8 @@
 //! Implements `Record`.
 
 use super::storage::Storage;
+use crate::enr::storage_rlp_encoding::RlpEncodingError;
+use crate::enr::Scheme;
 use std::net::Ipv4Addr;
 
 /// To create a `Record`, use `Builder`.
@@ -14,6 +16,11 @@ use std::net::Ipv4Addr;
 pub struct Record(pub(crate) Storage);
 
 impl Record {
+    pub fn rlp_data<S: Scheme>(&self) -> Result<Vec<u8>, RlpEncodingError> {
+        let rlp = self.0.encode_content_with_signature_to_rlp::<S>()?;
+        Ok(rlp.0)
+    }
+
     pub fn ip4(&self) -> Option<Ipv4Addr> {
         self.0.ip4
     }

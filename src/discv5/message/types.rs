@@ -4,7 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use fastrlp::RlpEncodable;
+use bytes::BufMut;
+use fastrlp::{Encodable, RlpEncodable};
 use rand::{CryptoRng, Rng};
 
 // nonce         = uint96    -- nonce of message
@@ -21,5 +22,15 @@ impl Nonce {
 // this value is assigned by the requester.
 // The recipient of a message must mirror the value in the request-id element of the response.
 // The selection of appropriate values for request IDs is left to the implementation.
-#[derive(Debug, RlpEncodable)]
-pub(crate) struct RequestId(pub(crate) [u8; 8]);
+#[derive(Debug)] // RlpEncodable
+pub(crate) struct RequestId(pub(crate) Vec<u8>);
+
+impl Encodable for RequestId {
+    fn encode(&self, out: &mut dyn bytes::BufMut) {
+        (&self.0[..]).encode(out)
+    }
+
+    fn length(&self) -> usize {
+        (&self.0[..]).length()
+    }
+}

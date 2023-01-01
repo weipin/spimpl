@@ -4,22 +4,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::discv5::auth_data::core::{AuthDataSize, AuthDataSource};
+use crate::discv5::auth_data::core::{AuthDataSize, FixedSizeAuthDataSource};
+use crate::discv5::message::protocol::whoareyou::{IdNonce, Whoareyou};
 use crate::enr;
+use std::mem;
 
-// authdata      = id-nonce || enr-seq
-// authdata-size = 24
-// id-nonce      = uint128   -- random bytes
-// enr-seq       = uint64    -- ENR sequence number of the requesting node
-pub(crate) struct IdNonce(pub(crate) [u8; 16]);
-
-pub(crate) struct WhoareyouAuthDataSource {
-    id_nonce: IdNonce,
-    enr_seq: enr::SequenceNumber,
-}
-
-impl AuthDataSource for WhoareyouAuthDataSource {
-    const SIZE: AuthDataSize = 24;
+impl FixedSizeAuthDataSource for Whoareyou {
+    const SIZE: AuthDataSize =
+        (mem::size_of::<IdNonce>() + mem::size_of::<enr::SequenceNumber>()) as u16;
 
     fn append_data_to_buffer(&self, buffer: &mut Vec<u8>) {
         buffer.extend(self.id_nonce.0);

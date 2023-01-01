@@ -8,5 +8,6 @@ pub(crate) mod flag;
 pub(crate) mod header;
 pub(crate) mod masked_header;
 pub(crate) mod packing;
+pub(crate) mod packing_whoareyou;
 pub(crate) mod static_header;
 pub(crate) mod unpacking;

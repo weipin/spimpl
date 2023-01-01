@@ -5,5 +5,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 pub(crate) mod core;
+pub(crate) mod handshake;
 pub(crate) mod ordinary;
 pub(crate) mod whoareyou;

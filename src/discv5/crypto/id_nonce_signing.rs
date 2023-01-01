@@ -4,8 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::discv5::auth_data::core::AuthDataSource;
-use crate::discv5::auth_data::whoareyou::WhoareyouAuthDataSource;
+use crate::discv5::auth_data::core::FixedSizeAuthDataSource;
+use crate::discv5::message::protocol::whoareyou::Whoareyou;
 use crate::discv5::packet::masked_header::MaskingIv;
 use crate::discv5::packet::static_header::{StaticHeaderData, STATIC_HEADER_DATA_BYTE_LENGTH};
 use crate::enr;
@@ -15,12 +15,11 @@ use sha2::{Digest, Sha256};
 use std::mem;
 
 // challenge-data     = masking-iv || static-header || authdata
-const CHALLENGE_DATA_BYTE_LENGTH: usize = mem::size_of::<MaskingIv>()
-    + STATIC_HEADER_DATA_BYTE_LENGTH
-    + WhoareyouAuthDataSource::SIZE as usize;
+pub(crate) const CHALLENGE_DATA_BYTE_LENGTH: usize =
+    mem::size_of::<MaskingIv>() + STATIC_HEADER_DATA_BYTE_LENGTH + Whoareyou::SIZE as usize;
 
-const ID_SIGNATURE_TEXT: &[u8] = b"discovery v5 identity proof";
-const ID_SIGNATURE_TEXT_BYTE_LENGTH: usize = ID_SIGNATURE_TEXT.len();
+pub(crate) const ID_SIGNATURE_TEXT: &[u8] = b"discovery v5 identity proof";
+pub(crate) const ID_SIGNATURE_TEXT_BYTE_LENGTH: usize = ID_SIGNATURE_TEXT.len();
 
 // id_sign(hash) creates a signature over hash using the node's static private key.
 // The signature is encoded as the 64-byte array r || s, i.e. as the concatenation of the signature values.
@@ -29,7 +28,7 @@ const ID_SIGNATURE_TEXT_BYTE_LENGTH: usize = ID_SIGNATURE_TEXT.len();
 // id-signature-input = id-signature-text || challenge-data || ephemeral-pubkey || node-id-B
 // id-signature       = id_sign(sha256(id-signature-input))
 
-const fn id_signature_input_byte_length<S: Scheme>() -> usize {
+pub(crate) const fn id_signature_input_byte_length<S: Scheme>() -> usize {
     ID_SIGNATURE_TEXT_BYTE_LENGTH
         + CHALLENGE_DATA_BYTE_LENGTH
         + S::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH

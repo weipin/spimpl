@@ -5,7 +5,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use super::flag::Flag;
-use crate::discv5::auth_data::core::{AuthDataSize, AuthDataSource};
+use crate::discv5::auth_data::core::{AuthDataSize, FixedSizeAuthDataSource};
 use crate::discv5::message;
 
 pub(crate) struct StaticHeaderData;

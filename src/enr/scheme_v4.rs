@@ -81,8 +81,7 @@ impl Scheme for Schemev4 {
         let signature = {
             let mut noncedata = [0; 32];
             OsRng.fill_bytes(&mut noncedata);
-            // SECP256K1.sign_ecdsa_with_noncedata(&msg, private_key, &noncedata)
-            SECP256K1.sign_ecdsa(&msg, private_key)
+            SECP256K1.sign_ecdsa_with_noncedata(&msg, private_key, &noncedata)
         };
 
         Ok(signature)

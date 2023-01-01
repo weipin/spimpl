@@ -4,12 +4,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::discv5::auth_data::core::AuthDataSource;
+use crate::discv5::auth_data::core::FixedSizeAuthDataSource;
 use crate::discv5::crypto::aesgcm;
 use crate::discv5::message;
 use crate::discv5::message::protocol::core::Message;
 use crate::discv5::packet::flag::Flag;
-use crate::discv5::packet::header::{encode_header_to_buffer, encoded_header_byte_length};
+use crate::discv5::packet::header::{
+    encode_fixed_size_header_to_buffer, fixed_size_encoded_header_byte_length,
+};
 use crate::discv5::packet::masked_header::MaskingIv;
 
 // message       = aesgcm_encrypt(initiator-key, nonce, message-pt, message-ad)

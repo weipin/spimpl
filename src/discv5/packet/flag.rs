@@ -5,7 +5,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 pub(crate) enum Flag {
-    OrdinaryMessage = 0,
+    Ordinary = 0,
     Whoareyou = 1,
-    HandshakeMessage = 2,
+    Handshake = 2,
 }
