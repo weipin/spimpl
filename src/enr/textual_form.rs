@@ -12,7 +12,9 @@ use super::storage::Storage;
 use super::storage_content_with_signature_rlp::StorageWithSignatureRlp;
 use super::storage_rlp_decoding::RlpDecodingError;
 use super::storage_rlp_encoding::RlpEncodingError;
-use crate::enr::output::{maximum_base64_encoded_output, maximum_rlp_encoded_output};
+use crate::enr::storage_content_with_signature_rlp::{
+    MAXIMUM_BASE64_ENCODED_BYTE_LENGTH, MAXIMUM_RLP_ENCODED_BYTE_LENGTH,
+};
 
 pub(crate) const TEXTUAL_FORM_PREFIX: &str = "enr:";
 
@@ -24,28 +26,8 @@ impl Record {
 
     /// Creates a `Record` from `textual_form`.
     pub fn from_textual_form<S: Scheme>(textual_form: &str) -> Result<Record, RlpDecodingError> {
-        let mut intermediate_decoding_output = maximum_rlp_encoded_output();
-        Self::from_textual_form_with_intermediate_decoding_output::<S>(
-            textual_form,
-            &mut intermediate_decoding_output,
-        )
-    }
-
-    /// Creates a `Record` from `textual_form`.
-    ///
-    /// The parameter `intermediate_decoding_output` is passed to avoid repeatedly memory allocating.
-    /// It isn't thread-safe and will panic if the size isn't large enough. Normally the return value
-    /// of `maximum_rlp_encoded_output` can be used as this output.
-    pub fn from_textual_form_with_intermediate_decoding_output<S: Scheme>(
-        textual_form: &str,
-        intermediate_decoding_output: &mut [u8],
-    ) -> Result<Record, RlpDecodingError> {
-        let storage_with_signature_rlp =
-            StorageWithSignatureRlp::from_textual_form_with_intermediate_decoding_output(
-                textual_form,
-                intermediate_decoding_output,
-            )?;
-        let storage = Storage::from_rlp::<S>(&mut storage_with_signature_rlp.0.as_slice())?;
+        let storage_with_signature_rlp = StorageWithSignatureRlp::from_textual_form(textual_form)?;
+        let storage = Storage::from_rlp::<S>(&storage_with_signature_rlp.0)?;
         if storage.encode_content_to_rlp::<S>().verify::<S>(
             storage.signature_value.as_ref().unwrap(),
             storage.public_key_value.as_ref().unwrap(),
@@ -68,19 +50,16 @@ impl StorageWithSignatureRlp {
     pub(crate) fn to_textual_form(&self) -> String {
         // The textual form of a node record is the base64 encoding of its RLP representation,
         // prefixed by enr:
-        let mut output = maximum_base64_encoded_output();
+        let mut output = [0; MAXIMUM_BASE64_ENCODED_BYTE_LENGTH];
         let base64 = self.to_base64(&mut output);
         [TEXTUAL_FORM_PREFIX, &String::from_utf8_lossy(base64)].concat()
     }
 
-    pub(crate) fn from_textual_form_with_intermediate_decoding_output(
-        s: &str,
-        intermediate_decoding_output: &mut [u8],
-    ) -> Result<Self, RlpDecodingError> {
+    pub(crate) fn from_textual_form(s: &str) -> Result<Self, RlpDecodingError> {
         let base64 = s
             .strip_prefix(TEXTUAL_FORM_PREFIX)
             .ok_or(RlpDecodingError::InvalidFormat)?;
-        Self::from_base64(base64, intermediate_decoding_output)
+        Self::from_base64(base64)
     }
 }
 
@@ -90,8 +69,8 @@ mod tests {
     use crate::enr::builder::Builder;
     use crate::enr::testing_helper::EXAMPLE_RECORD_ADDRESS;
     use crate::enr::Schemev4;
+    use crate::rlp;
     use crate::testing_utils::quickcheck_ip_addr_octets::{Ipv4AddrOctets, Ipv6AddrOctets};
-    use fastrlp::DecodeError::InputTooShort;
     use hex_literal::hex;
     use quickcheck_macros::quickcheck;
     use rand::{thread_rng, RngCore};
@@ -114,7 +93,10 @@ mod tests {
         let data = [
             ("", RlpDecodingError::InvalidFormat),
             ("enr", RlpDecodingError::InvalidFormat),
-            ("enr:", RlpDecodingError::DecodingRLPError(InputTooShort)),
+            (
+                "enr:",
+                RlpDecodingError::DecodingRLPError(rlp::DecodingError::InvalidFormat),
+            ),
             ("enr:xx", RlpDecodingError::InvalidFormat),
             ("ENR:xx", RlpDecodingError::InvalidFormat),
             (
@@ -144,7 +126,7 @@ mod tests {
                     "CBOonrkTfj499SZuOh8R33Ls8RRcy5yCAAGCaWSCdjSCaXCEfwAAAYlzZWNwMjU2",
                     "azGhA8pjTK4NSay0Adikxrb-jFW3DRFb9AB2nMFADzJYzTE4g3VkcIJ2Xw"
                 ),
-                RlpDecodingError::DecodingRLPError(fastrlp::DecodeError::LeadingZero),
+                RlpDecodingError::DecodingRLPError(rlp::DecodingError::InvalidFormat),
             ),
         ];
 

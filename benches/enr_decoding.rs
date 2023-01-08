@@ -29,18 +29,6 @@ fn my_enr_decoding(bench: &mut Bencher) {
 }
 
 #[bench]
-fn my_enr_decoding_with_intermediate_decoding_output(bench: &mut Bencher) {
-    let mut intermediate_decoding_output = vec![0; 300];
-    bench.iter(|| {
-        Record::from_textual_form_with_intermediate_decoding_output::<Schemev4>(
-            EXAMPLE_RECORD_ADDRESS,
-            &mut intermediate_decoding_output,
-        )
-        .unwrap();
-    })
-}
-
-#[bench]
 fn sigp_enr_k256_decoding(bench: &mut Bencher) {
     bench.iter(|| {
         EXAMPLE_RECORD_ADDRESS.parse::<DefaultEnr>().unwrap();

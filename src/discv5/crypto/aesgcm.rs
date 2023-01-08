@@ -19,14 +19,10 @@ pub(crate) fn encrypt(key: &[u8], nonce: &[u8], ad: &[u8], pt_in_ct_out: &mut Ve
     debug_assert_eq!(nonce.len(), 12);
     debug_assert!(!ad.is_empty());
 
-    #[cfg(debug_assertions)]
-    let in_len = pt_in_ct_out.len();
-
     let cipher = Aes128Gcm::new_from_slice(key).unwrap();
     let nonce = Nonce::from_slice(nonce);
 
     let result = cipher.encrypt_in_place(nonce, ad, pt_in_ct_out).is_ok();
-    debug_assert_eq!(in_len + TAG_BYTE_LENGTH, pt_in_ct_out.len());
     result
 }
 

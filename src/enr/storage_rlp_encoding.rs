@@ -9,101 +9,78 @@
 use super::predefined_keys::{ID_KEY, IP4_KEY, IP6_KEY, TCP4_KEY, TCP6_KEY, UDP4_KEY, UDP6_KEY};
 use super::scheme::Scheme;
 use super::storage::Storage;
-use bytes::BytesMut;
-use fastrlp::{Encodable, Header};
+use crate::rlp;
+use crate::rlp::RlpItemType;
 
 impl Storage {
     pub(crate) fn to_rlp<S: Scheme>(&self, with_signature: bool) -> Vec<u8> {
         debug_assert!(self.id.is_some());
         debug_assert!(self.public_key_value.is_some());
 
-        // TODO: with_capacity
-        let mut rlp_header_data = BytesMut::new();
-        let mut rlp_items_data = BytesMut::new();
-        let mut header = Header {
-            list: true,
-            payload_length: 0,
-        };
+        let mut rlp_list_payload = vec![];
 
         // [signature, seq, k, v, ...]
         // signature
         if with_signature {
             debug_assert!(self.signature_value.is_some());
             let signature_value = self.signature_value.as_ref().unwrap().as_slice();
-            header.payload_length += signature_value.length();
-            signature_value.encode(&mut rlp_items_data);
+            rlp::encode(signature_value, &mut rlp_list_payload);
         }
 
         // seq
-        header.payload_length += self.seq.length();
-        self.seq.encode(&mut rlp_items_data);
+        rlp::encode(self.seq, &mut rlp_list_payload);
 
         // The key/value pairs must be sorted by key and must be unique:
         // id, ip, ip6, secp256k1, tcp, tcp6, udp, udp6
 
         // id
-        header.payload_length += ID_KEY.length();
-        header.payload_length += S::id().length();
-        ID_KEY.encode(&mut rlp_items_data);
-        S::id().encode(&mut rlp_items_data);
+        rlp::encode(ID_KEY, &mut rlp_list_payload);
+        rlp::encode(S::id(), &mut rlp_list_payload);
 
         // ip
         if let Some(ip4) = self.ip4 {
-            header.payload_length += IP4_KEY.length();
-            header.payload_length += ip4.octets().length();
-            IP4_KEY.encode(&mut rlp_items_data);
-            ip4.octets().encode(&mut rlp_items_data);
+            rlp::encode(IP4_KEY, &mut rlp_list_payload);
+            rlp::encode(&ip4.octets(), &mut rlp_list_payload);
         }
 
         // ip6
         if let Some(ip6) = self.ip6 {
-            header.payload_length += IP6_KEY.length();
-            header.payload_length += ip6.octets().length();
-            IP6_KEY.encode(&mut rlp_items_data);
-            ip6.octets().encode(&mut rlp_items_data);
+            rlp::encode(IP6_KEY, &mut rlp_list_payload);
+            rlp::encode(&ip6.octets(), &mut rlp_list_payload);
         }
 
         // public key value (secp256k1)
         let public_key_value = self.public_key_value.as_ref().unwrap().as_slice();
-        header.payload_length += S::public_key_key().length();
-        header.payload_length += public_key_value.length();
-        S::public_key_key().encode(&mut rlp_items_data);
-        public_key_value.encode(&mut rlp_items_data);
+        rlp::encode(S::public_key_key(), &mut rlp_list_payload);
+        rlp::encode(public_key_value, &mut rlp_list_payload);
 
         // tcp
         if let Some(tcp4) = self.tcp4 {
-            header.payload_length += TCP4_KEY.length();
-            header.payload_length += tcp4.length();
-            TCP4_KEY.encode(&mut rlp_items_data);
-            tcp4.encode(&mut rlp_items_data);
+            rlp::encode(TCP4_KEY, &mut rlp_list_payload);
+            rlp::encode(tcp4, &mut rlp_list_payload);
         }
 
         // tcp6
         if let Some(tcp6) = self.tcp6 {
-            header.payload_length += TCP6_KEY.length();
-            header.payload_length += tcp6.length();
-            TCP6_KEY.encode(&mut rlp_items_data);
-            tcp6.encode(&mut rlp_items_data);
+            rlp::encode(TCP6_KEY, &mut rlp_list_payload);
+            rlp::encode(tcp6, &mut rlp_list_payload);
         }
 
         // udp
         if let Some(udp4) = self.udp4 {
-            header.payload_length += UDP4_KEY.length();
-            header.payload_length += udp4.length();
-            UDP4_KEY.encode(&mut rlp_items_data);
-            udp4.encode(&mut rlp_items_data);
+            rlp::encode(UDP4_KEY, &mut rlp_list_payload);
+            rlp::encode(udp4, &mut rlp_list_payload);
         }
 
         // udp6
         if let Some(udp6) = self.udp6 {
-            header.payload_length += UDP6_KEY.length();
-            header.payload_length += udp6.length();
-            UDP6_KEY.encode(&mut rlp_items_data);
-            udp6.encode(&mut rlp_items_data);
+            rlp::encode(UDP6_KEY, &mut rlp_list_payload);
+            rlp::encode(udp6, &mut rlp_list_payload);
         }
 
-        header.encode(&mut rlp_header_data);
-        [rlp_header_data, rlp_items_data].concat()
+        let mut rlp_data = vec![];
+        rlp::encode_item(&mut rlp_data, RlpItemType::List, &rlp_list_payload);
+        rlp_data
     }
 }
 

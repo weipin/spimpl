@@ -9,7 +9,6 @@
 
 pub(crate) mod base64;
 mod builder;
-pub(crate) mod output;
 pub(crate) mod predefined_keys;
 mod publishable_record;
 pub(crate) mod record;

@@ -9,6 +9,7 @@ use super::storage_content_with_signature_rlp::MAXIMUM_BASE64_ENCODED_BYTE_LENGT
 use super::storage_rlp_decoding::RlpDecodingError;
 use base64::alphabet::URL_SAFE;
 use base64::engine::fast_portable::{FastPortable, FastPortableConfig};
+use base64::engine::DecodePaddingMode;
 use base64::{decode_engine_slice, encode_engine_slice};
 
 impl StorageWithSignatureRlp {
@@ -21,20 +22,17 @@ impl StorageWithSignatureRlp {
     }
 
     /// Creates a `StorageWithSignatureRlp` from its base64 form.
-    /// Will panics if `intermediate_decoding_output` isn't large enough.
-    pub(crate) fn from_base64(
-        s: &str,
-        intermediate_decoding_output: &mut [u8],
-    ) -> Result<Self, RlpDecodingError> {
+    pub(crate) fn from_base64(s: &str) -> Result<Self, RlpDecodingError> {
         if s.len() > MAXIMUM_BASE64_ENCODED_BYTE_LENGTH {
             return Err(RlpDecodingError::MaximumEncodedByteLengthExceeded);
         }
 
-        let size = decode_engine_slice(s, intermediate_decoding_output, &URL_SAFE_CONFIG)
+        let mut output = vec![0; MAXIMUM_BASE64_ENCODED_BYTE_LENGTH];
+        let size = decode_engine_slice(s, &mut output, &URL_SAFE_CONFIG)
             .map_err(|_| RlpDecodingError::InvalidFormat)?;
-        Ok(StorageWithSignatureRlp(
-            intermediate_decoding_output[0..size].to_vec(),
-        ))
+        output.resize(size, 0);
+
+        Ok(StorageWithSignatureRlp(output))
     }
 }
 
@@ -42,51 +40,31 @@ pub(crate) static URL_SAFE_CONFIG: FastPortable = FastPortable::from(
     &URL_SAFE,
     FastPortableConfig::new()
         .with_encode_padding(false)
-        .with_decode_allow_trailing_bits(false),
+        .with_decode_allow_trailing_bits(false)
+        .with_decode_padding_mode(DecodePaddingMode::RequireNone),
 );
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::enr::output::maximum_rlp_encoded_output;
+    use crate::enr::storage_content_with_signature_rlp::MAXIMUM_RLP_ENCODED_BYTE_LENGTH;
 
     #[test]
     fn test_check_maximum_encoded_byte_length() {
-        let mut intermediate_coding_output = maximum_rlp_encoded_output();
         let data1 = concat!(
-            "-QEouQElYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE"
+            "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gSW50ZWdlciBuZWMgb2Rpby4gUHJhZXNlbnQgbGliZXJvLiBTZWQgY3Vyc3VzIGFudGUgZGFwaWJ1cyBkaWFtLiBTZWQgbmlzaS4gTnVsbGEgcXVpcyBzZW0gYXQgbmliaCBlbGVtZW50dW0gaW1wZXJkaWV0LiBEdWlzIHNhZ2l0dGlzIGlwc3VtLiBQcmFlc2VudCBtYXVyaXMuIEZ1c2NlIG5lYyB0ZWxsdXMgc2VkIGF1Z3VlIHNlbXBlciBwb3J0YS4gTWF1cmlzIG1hc3NhLiBWZXN0aWJ1bHVtIGxhY2luaWEgYXJjdSBlZ2V0dS4",
         ); // 299
         let data2 = concat!(
-            "-QEpuQEmYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"
+            "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gSW50ZWdlciBuZWMgb2Rpby4gUHJhZXNlbnQgbGliZXJvLiBTZWQgY3Vyc3VzIGFudGUgZGFwaWJ1cyBkaWFtLiBTZWQgbmlzaS4gTnVsbGEgcXVpcyBzZW0gYXQgbmliaCBlbGVtZW50dW0gaW1wZXJkaWV0LiBEdWlzIHNhZ2l0dGlzIGlwc3VtLiBQcmFlc2VudCBtYXVyaXMuIEZ1c2NlIG5lYyB0ZWxsdXMgc2VkIGF1Z3VlIHNlbXBlciBwb3J0YS4gTWF1cmlzIG1hc3NhLiBWZXN0aWJ1bHVtIGxhY2luaWEgYXJjdSBlZ2V0dWEu",
         ); // 300
         let data3 = concat!(
-            "-QEquQEnYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-            "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ"
+            "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gSW50ZWdlciBuZWMgb2Rpby4gUHJhZXNlbnQgbGliZXJvLiBTZWQgY3Vyc3VzIGFudGUgZGFwaWJ1cyBkaWFtLiBTZWQgbmlzaS4gTnVsbGEgcXVpcyBzZW0gYXQgbmliaCBlbGVtZW50dW0gaW1wZXJkaWV0LiBEdWlzIHNhZ2l0dGlzIGlwc3VtLiBQcmFlc2VudCBtYXVyaXMuIEZ1c2NlIG5lYyB0ZWxsdXMgc2VkIGF1Z3VlIHNlbXBlciBwb3J0YS4gTWF1cmlzIG1hc3NhLiBWZXN0aWJ1bHVtIGxhY2luaWEgYXJjdSBlZ2V0dWFuLg",
         ); // 301
 
-        assert!(
-            StorageWithSignatureRlp::from_base64(data1, &mut intermediate_coding_output).is_ok()
-        );
-        assert!(
-            StorageWithSignatureRlp::from_base64(data2, &mut intermediate_coding_output).is_ok()
-        );
+        assert!(StorageWithSignatureRlp::from_base64(data1).is_ok());
+        assert!(StorageWithSignatureRlp::from_base64(data2).is_ok());
         assert_eq!(
-            StorageWithSignatureRlp::from_base64(data3, &mut intermediate_coding_output)
-                .unwrap_err(),
+            StorageWithSignatureRlp::from_base64(data3).unwrap_err(),
             RlpDecodingError::MaximumEncodedByteLengthExceeded
         );
     }
