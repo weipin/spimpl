@@ -4,12 +4,40 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::rlp::{encode_single_value, DecodingError, Encodable, RlpItemType};
+use crate::rlp::{encode, encode_item, encode_single_value, DecodingError, Encodable, RlpItemType};
 
 impl Encodable for &[u8] {
     fn encode(self, output: &mut Vec<u8>) {
-        encode_single_value(output, self);
+        encode_single_value(self, output);
     }
+}
+
+impl Encodable for &[u64] {
+    fn encode(self, output: &mut Vec<u8>) {
+        encode_slice_by_value_element(self, output);
+    }
+}
+
+pub(crate) fn encode_slice_by_value_element<T: Encodable + Copy>(
+    slice: &[T],
+    output: &mut Vec<u8>,
+) {
+    let mut payload = vec![];
+    for &element in slice {
+        Encodable::encode(element, &mut payload);
+    }
+    encode_item(RlpItemType::List, &payload, output);
+}
+
+pub(crate) fn encode_slice_by_ref_element<'a, T>(slice: &'a [T], output: &mut Vec<u8>)
+where
+    &'a T: Encodable,
+{
+    let mut payload = vec![];
+    for element in slice {
+        Encodable::encode(element, &mut payload);
+    }
+    encode_item(RlpItemType::List, &payload, output);
 }
 
 #[cfg(test)]

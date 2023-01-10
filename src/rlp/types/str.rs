@@ -9,7 +9,7 @@ use crate::rlp::{encode_single_value, DecodingError, Encodable, RlpItemType};
 
 impl Encodable for &str {
     fn encode(self, output: &mut Vec<u8>) {
-        encode_single_value(output, self.as_bytes());
+        encode_single_value(self.as_bytes(), output);
     }
 }
 

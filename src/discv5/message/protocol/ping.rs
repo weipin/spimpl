@@ -8,22 +8,28 @@ use super::core::Message;
 use crate::discv5::auth_data::core::{AuthDataSize, FixedSizeAuthDataSource};
 use crate::discv5::message::RequestId;
 use crate::enr;
-use bytes::BytesMut;
-use fastrlp::{Encodable, RlpEncodable};
+use crate::rlp;
 
-#[derive(Debug, RlpEncodable)]
+#[derive(Debug)]
 pub(crate) struct Ping {
     pub(crate) request_id: RequestId,
     pub(crate) enr_seq: enr::SequenceNumber,
+}
+
+impl rlp::Encodable for &Ping {
+    fn encode(self, output: &mut Vec<u8>) {
+        let mut payload = vec![];
+        rlp::encode(&self.request_id, &mut payload);
+        rlp::encode(self.enr_seq, &mut payload);
+        rlp::encode_item(rlp::RlpItemType::List, &payload, output);
+    }
 }
 
 impl Message for Ping {
     const TYPE: u8 = 0x01;
 
     fn encode_to_data(&self, data: &mut Vec<u8>) {
-        let mut bytes = BytesMut::new();
-        self.encode(&mut bytes);
-        data.extend(bytes.to_vec());
+        rlp::encode(self, data);
     }
 }
 

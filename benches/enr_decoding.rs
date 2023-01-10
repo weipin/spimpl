@@ -11,6 +11,7 @@ extern crate test;
 use enr::{k256, Enr};
 use spimpl::enr::{Record, Schemev4};
 use test::Bencher;
+use simple_enr;
 
 const EXAMPLE_RECORD_ADDRESS: &str = concat!(
     "enr:-IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjz",
@@ -39,5 +40,12 @@ fn sigp_enr_k256_decoding(bench: &mut Bencher) {
 fn sigp_enr_secp256_decoding(bench: &mut Bencher) {
     bench.iter(|| {
         EXAMPLE_RECORD_ADDRESS.parse::<Secp256Enr>().unwrap();
+    })
+}
+
+#[bench]
+fn simple_enr_decoding(bench: &mut Bencher) {
+    bench.iter(|| {
+        simple_enr::Record::from_textual_form::<simple_enr::Schemev4>(EXAMPLE_RECORD_ADDRESS).unwrap();
     })
 }

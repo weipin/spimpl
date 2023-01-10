@@ -45,7 +45,7 @@ macro_rules! impl_encodable_for_int {
     ($t:ty) => {
         impl Encodable for $t {
             fn encode(self, output: &mut Vec<u8>) {
-                encode_single_value(output, strip_leading_zeros(&self.to_be_bytes()));
+                encode_single_value(strip_leading_zeros(&self.to_be_bytes()), output);
             }
         }
     };

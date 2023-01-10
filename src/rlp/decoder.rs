@@ -14,7 +14,7 @@ pub fn decode_payload<T: Decodable>(
     if item_type != T::TYPE {
         return Err(DecodingError::InvalidFormat);
     }
-    T::decode(payload)
+    Decodable::decode(payload)
 }
 
 pub fn decode<T: Decodable>(bytes: &[u8]) -> Result<T, DecodingError> {

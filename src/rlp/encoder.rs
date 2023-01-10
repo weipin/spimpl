@@ -7,5 +7,5 @@
 use crate::rlp::core::Encodable;
 
 pub fn encode<T: Encodable>(value: T, output: &mut Vec<u8>) {
-    value.encode(output);
+    Encodable::encode(value, output);
 }

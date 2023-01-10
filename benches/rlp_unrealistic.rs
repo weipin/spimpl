@@ -87,6 +87,6 @@ fn decode_1000_u64_a(bench: &mut Bencher) {
     fastrlp::encode_list(input.as_slice(), &mut data);
 
     bench.iter(|| {
-        let _ = Vec::<u64>::decode(&mut &data[..]).unwrap();
+        let _: Vec::<u64> = fastrlp::Decodable::decode(&mut &data[..]).unwrap();
     })
 }

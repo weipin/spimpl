@@ -21,7 +21,7 @@ impl<const N: usize> Decodable for [u8; N] {
 
 impl<const N: usize> Encodable for &[u8; N] {
     fn encode(self, output: &mut Vec<u8>) {
-        encode_single_value(output, self);
+        encode_single_value(self, output);
     }
 }
 

@@ -12,7 +12,6 @@ use super::scheme::Scheme;
 use super::storage::Storage;
 use crate::rlp;
 use crate::rlp::{ListDecoder, RlpItemType};
-use bytes::{Buf, Bytes};
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 impl Storage {

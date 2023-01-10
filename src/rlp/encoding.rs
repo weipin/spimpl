@@ -11,14 +11,14 @@ use super::core::{RlpItemType, MAX_BYTE_LENGTH_OF_PAYLOAD_BYTE_LENGTH};
 use crate::utils::bytes::strip_leading_zeros;
 
 /// Encodes `payload` as a single value item.
-pub fn encode_single_value(output: &mut Vec<u8>, payload: &[u8]) {
-    encode_item(output, RlpItemType::SingleValue, payload);
+pub fn encode_single_value(payload: &[u8], output: &mut Vec<u8>) {
+    encode_item(RlpItemType::SingleValue, payload, output);
 }
 
 /// Encodes `payload` as a single value item or a list item.
 /// The item type is specified by `item_type`.
-pub fn encode_item(output: &mut Vec<u8>, item_type: RlpItemType, payload: &[u8]) {
-    encode_payload_length(output, item_type, payload);
+pub fn encode_item(item_type: RlpItemType, payload: &[u8], output: &mut Vec<u8>) {
+    encode_payload_length(item_type, payload, output);
     output.extend(payload);
 }
 
@@ -28,7 +28,7 @@ pub fn encode_item(output: &mut Vec<u8>, item_type: RlpItemType, payload: &[u8])
 ///
 /// While this function encodes only the length of the `payload`,
 /// the `payload` itself is still required for the examination of its first byte.
-pub(crate) fn encode_payload_length(output: &mut Vec<u8>, item_type: RlpItemType, payload: &[u8]) {
+pub(crate) fn encode_payload_length(item_type: RlpItemType, payload: &[u8], output: &mut Vec<u8>) {
     let payload_length = payload.len();
 
     if item_type == RlpItemType::SingleValue
@@ -89,7 +89,7 @@ mod tests {
     fn test_examples() {
         let mut output = vec![];
         // The string “dog” = [ 0x83, ‘d’, ‘o’, ‘g’ ]
-        encode_single_value(&mut output, "dog".as_bytes());
+        encode_single_value("dog".as_bytes(), &mut output);
         assert_eq!(output, vec![0x83, b'd', b'o', b'g']);
 
         // The list [ “cat”, “dog” ] = [ 0xc8, 0x83, 'c', 'a', 't', 0x83, 'd', 'o', 'g' ]
@@ -99,7 +99,7 @@ mod tests {
         ];
         let mut payload = vec![];
         for item in items {
-            encode_single_value(&mut payload, item.1);
+            encode_single_value(item.1, &mut payload);
         }
         output.clear();
         encode_list(&mut output, &payload);
@@ -110,7 +110,7 @@ mod tests {
 
         // The empty string (‘null’) = [ 0x80 ]
         output.clear();
-        encode_single_value(&mut output, &[]);
+        encode_single_value(&[], &mut output);
         assert_eq!(output, vec![0x80]);
 
         // The empty list = [ 0xc0 ]
@@ -120,22 +120,22 @@ mod tests {
 
         // The integer 0 = [ 0x80 ]
         output.clear();
-        encode_single_value(&mut output, strip_leading_zeros(&0_u8.to_be_bytes()));
+        encode_single_value(strip_leading_zeros(&0_u8.to_be_bytes()), &mut output);
         assert_eq!(output, vec![0x80]);
 
         // The encoded integer 0 (’\x00’) = [ 0x00 ]
         output.clear();
-        encode_single_value(&mut output, &[0x00]);
+        encode_single_value(&[0x00], &mut output);
         assert_eq!(output, vec![0x00]);
 
         // The encoded integer 15 (’\x0f’) = [ 0x0f ]
         output.clear();
-        encode_single_value(&mut output, &[0x0f]);
+        encode_single_value(&[0x0f], &mut output);
         assert_eq!(output, vec![0x0f]);
 
         // The encoded integer 1024 (’\x04\x00’) = [ 0x82, 0x04, 0x00 ]
         output.clear();
-        encode_single_value(&mut output, strip_leading_zeros(&1024_usize.to_be_bytes()));
+        encode_single_value(strip_leading_zeros(&1024_usize.to_be_bytes()), &mut output);
         assert_eq!(output, vec![0x82, 0x04, 0x00]);
 
         // The set theoretical representation of three,
@@ -162,12 +162,12 @@ mod tests {
         let mut encoded = vec![0xb8, 0x38];
         encoded.extend(str_bytes);
         output.clear();
-        encode_single_value(&mut output, str_bytes);
+        encode_single_value(str_bytes, &mut output);
         assert_eq!(output, encoded);
     }
 
     /// Encodes `payload` as a list item.
     fn encode_list(output: &mut Vec<u8>, payload: &[u8]) {
-        encode_item(output, RlpItemType::List, payload)
+        encode_item(RlpItemType::List, payload, output)
     }
 }

@@ -4,8 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use bytes::BufMut;
-use fastrlp::{Encodable, RlpEncodable};
+use crate::rlp;
 use rand::{CryptoRng, Rng};
 
 // nonce         = uint96    -- nonce of message
@@ -25,12 +24,8 @@ impl Nonce {
 #[derive(Debug)] // RlpEncodable
 pub(crate) struct RequestId(pub(crate) Vec<u8>);
 
-impl Encodable for RequestId {
-    fn encode(&self, out: &mut dyn bytes::BufMut) {
-        (&self.0[..]).encode(out)
-    }
-
-    fn length(&self) -> usize {
-        (&self.0[..]).length()
+impl rlp::Encodable for &RequestId {
+    fn encode(self, output: &mut Vec<u8>) {
+        rlp::encode(self.0.as_slice(), output);
     }
 }

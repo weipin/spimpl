@@ -9,6 +9,7 @@
 
 use super::core::RlpItemType;
 use super::core::{ByteLengthOfPayloadByteLength, PayloadByteLength};
+use crate::utils::int_from_bytes::new_u64_from_unaligned_bytes;
 use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
@@ -100,13 +101,9 @@ pub(crate) fn decode_data_header(
             if data.len() < (1 + byte_length_of_payload_byte_length as usize) {
                 return Err(DecodingError::InvalidFormat);
             }
-            // TODO: remove `copy_from_slice`
-            let mut payload_byte_length_bytes = [0; size_of::<PayloadByteLength>()];
-            payload_byte_length_bytes
-                [(size_of::<PayloadByteLength>() - byte_length_of_payload_byte_length as usize)..]
-                .copy_from_slice(&data[1..=byte_length_of_payload_byte_length as usize]);
-            let payload_byte_length = PayloadByteLength::from_be_bytes(payload_byte_length_bytes);
-
+            let payload_byte_length = new_u64_from_unaligned_bytes(
+                &data[1..=byte_length_of_payload_byte_length as usize],
+            );
             if data.len()
                 < (1 + byte_length_of_payload_byte_length as usize + payload_byte_length as usize)
             {
@@ -135,12 +132,9 @@ pub(crate) fn decode_data_header(
             if data.len() < (1 + byte_length_of_payload_byte_length as usize) {
                 return Err(DecodingError::InvalidFormat);
             }
-            // TODO: remove `copy_from_slice`
-            let mut payload_byte_length_bytes = [0; std::mem::size_of::<PayloadByteLength>()];
-            payload_byte_length_bytes[(std::mem::size_of::<PayloadByteLength>()
-                - byte_length_of_payload_byte_length as usize)..]
-                .copy_from_slice(&data[1..=byte_length_of_payload_byte_length as usize]);
-            let payload_byte_length = PayloadByteLength::from_be_bytes(payload_byte_length_bytes);
+            let payload_byte_length = new_u64_from_unaligned_bytes(
+                &data[1..=byte_length_of_payload_byte_length as usize],
+            );
 
             if data.len()
                 < (1 + byte_length_of_payload_byte_length as usize + payload_byte_length as usize)

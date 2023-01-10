@@ -5,7 +5,10 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use crate::rlp::core::Decodable;
-use crate::rlp::{decode_list_payload, decode_payload, encode, encode_item, encode_single_value, DecodingError, RlpItemType, Encodable};
+use crate::rlp::{
+    decode_list_payload, decode_payload, encode, encode_item, encode_single_value, DecodingError,
+    Encodable, RlpItemType,
+};
 
 impl Decodable for Vec<u8> {
     const TYPE: RlpItemType = RlpItemType::SingleValue;
@@ -20,24 +23,18 @@ impl Decodable for Vec<u64> {
     const TYPE: RlpItemType = RlpItemType::List;
 
     fn decode(payload: &[u8]) -> Result<Self, DecodingError> {
-        let items = decode_list_payload(payload)?;
-        let mut v = vec![];
-        for (item_type, item_payload) in items {
-            let element = decode_payload(item_type, item_payload)?;
-            v.push(element);
-        }
-        Ok(v)
+        decode_vec(payload)
     }
 }
 
-impl Encodable for &[u64] {
-    fn encode(self, output: &mut Vec<u8>) {
-        let mut payload = vec![];
-        for &n in self {
-            encode(n, &mut payload);
-        }
-        encode_item(output, RlpItemType::List, &payload);
+pub(crate) fn decode_vec<T: Decodable>(payload: &[u8]) -> Result<Vec<T>, DecodingError> {
+    let items = decode_list_payload(payload)?;
+    let mut v = vec![];
+    for (item_type, item_payload) in items {
+        let element = decode_payload(item_type, item_payload)?;
+        v.push(element);
     }
+    Ok(v)
 }
 
 #[cfg(test)]

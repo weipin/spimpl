@@ -79,7 +79,7 @@ impl Storage {
         }
 
         let mut rlp_data = vec![];
-        rlp::encode_item(&mut rlp_data, RlpItemType::List, &rlp_list_payload);
+        rlp::encode_item(RlpItemType::List, &rlp_list_payload, &mut rlp_data);
         rlp_data
     }
 }
