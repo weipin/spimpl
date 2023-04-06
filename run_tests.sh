@@ -9,6 +9,8 @@ cargo test --doc
 # Tests time-consuming cases
 cargo test --release -- --ignored
 
+cargo +nightly udeps
+
 # cargo +nightly careful test
 
 # cargo clean

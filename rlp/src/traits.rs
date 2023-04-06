@@ -7,6 +7,7 @@
 //! Traits types have to implement to support RLP serialization.
 
 use crate::{Error, ItemPayloadSlice, ItemType};
+pub use rlp_derive::*;
 
 /// Trait for RLP encoding.
 pub trait Encode {

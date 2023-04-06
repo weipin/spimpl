@@ -4,15 +4,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-//! Implements RLP decoding for `Vec<u8>`.
+//! Implements RLP for `Vec<u8>`.
 
-use crate::{Decode, Error, ItemPayloadSlice, ItemType};
+use crate::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 
 impl<'a> Decode<'a> for Vec<u8> {
     const TYPE: ItemType = ItemType::SingleValue;
 
     fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, Error> {
         Ok(payload.0.to_vec())
+    }
+}
+
+impl Encode for &Vec<u8> {
+    fn encode(self, output: &mut Vec<u8>) {
+        ItemPayloadSlice(self.as_slice()).encode_as_single_value(output);
     }
 }
 

@@ -12,4 +12,6 @@ rlp = { path = "../rlp" }
 extensions = { path = "../extensions" }
 num-bigint = "0.4.3"
 num-traits = "0.2.15"
+
+[dev-dependencies]
 hex-literal = "0.4.0"

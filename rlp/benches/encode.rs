@@ -36,6 +36,6 @@ fn encode_vec_of_u64(b: &mut test::Bencher) {
         let data: Vec<u64> = (0u64..1000).collect();
 
         let mut rlp_encoded = vec![];
-        encode(data, &mut rlp_encoded);
+        encode(&data, &mut rlp_encoded);
     })
 }

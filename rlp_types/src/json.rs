@@ -70,8 +70,6 @@ fn decode_payload_to_json_value(
 pub fn encode_json_value_to_rlp(value: &Value) -> Vec<u8> {
     let mut output = vec![];
     match value {
-        Value::Null => unimplemented!(),
-        Value::Bool(_) => unimplemented!(),
         Value::Number(number) => {
             let n = number.as_u64().unwrap();
             encode(n, &mut output);
@@ -94,7 +92,7 @@ pub fn encode_json_value_to_rlp(value: &Value) -> Vec<u8> {
             });
             ItemPayloadSlice(&payload).encode_as_list(&mut output);
         }
-        Value::Object(_) => unimplemented!(),
+        Value::Null | Value::Bool(_) | Value::Object(_) => unimplemented!(),
     }
 
     output

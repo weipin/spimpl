@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 extensions = { path = "../extensions" }
+rlp_derive = { path = "../rlp_derive" }
 thiserror = "1.0.37"
 
 [dev-dependencies]
-fastrlp = "0.2.2"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
 parity_rlp = { version = "0.5.2", package = "rlp" }

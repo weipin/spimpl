@@ -4,28 +4,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-//! Examples for newtype RLP serialization.
-
 use hex_literal::hex;
-use rlp::{decode, encode, Decode, Encode, Error, ItemPayloadSlice, ItemType};
+use rlp::{decode, encode, Decode, Encode};
 
-#[derive(Debug, PartialEq)]
+#[derive(Encode, Decode, Debug, PartialEq)]
 struct Signature<'a>(&'a [u8]);
-
-impl Encode for &Signature<'_> {
-    fn encode(self, output: &mut Vec<u8>) {
-        encode(self.0, output);
-    }
-}
-
-impl<'a> Decode<'a> for Signature<'a> {
-    const TYPE: ItemType = ItemType::SingleValue;
-
-    fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, Error> {
-        let s = <&'a [u8] as Decode>::decode(payload)?;
-        Ok(Signature(s))
-    }
-}
 
 #[test]
 fn test_signature() {

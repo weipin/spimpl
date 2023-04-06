@@ -17,6 +17,10 @@ jobs:
         os: [macos-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt
       - name: Rustfmt
         run: cargo fmt -- --check
 
@@ -27,6 +31,10 @@ jobs:
         os: [macos-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
+        with:
+            toolchain: nightly
+            override: true
+            components: clippy
       - name: Build
         run: cargo build --verbose
       - name: Clippy

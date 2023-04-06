@@ -119,7 +119,7 @@ fn test_nested_list_roundtrip() {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct Inner(u64, u64);
 
-    impl Encode for Inner {
+    impl Encode for &Inner {
         fn encode(self, output: &mut Vec<u8>) {
             let mut payload = vec![];
             encode(self.0, &mut payload);
@@ -147,9 +147,12 @@ fn test_nested_list_roundtrip() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct Nest<T>(Vec<T>);
 
-    impl<T: Encode> Encode for Nest<T> {
+    impl<'a, T> Encode for &'a Nest<T>
+    where
+        &'a T: Encode,
+    {
         fn encode(self, output: &mut Vec<u8>) {
-            encode(self.0, output);
+            encode(&self.0, output);
         }
     }
 
@@ -166,14 +169,14 @@ fn test_nested_list_roundtrip() {
     let nest = Nest(items);
 
     let mut encoded = vec![];
-    encode(nest.clone(), &mut encoded);
+    encode(&nest, &mut encoded);
     let decoded = decode(&encoded).unwrap();
     assert_eq!(nest, decoded);
 
     let nest2 = Nest(vec![nest.clone(), nest]);
 
     let mut encoded = vec![];
-    encode(nest2.clone(), &mut encoded);
+    encode(&nest2, &mut encoded);
     let decoded = decode(&encoded).unwrap();
     assert_eq!(nest2, decoded);
 }

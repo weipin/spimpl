@@ -3,6 +3,6 @@
 members = [
   "extensions",
   "rlp",
+  "rlp_derive",
   "rlp_types"
 ]
-
