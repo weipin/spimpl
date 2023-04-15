@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "enr",
   "extensions",
   "rlp",
   "rlp_derive",

@@ -22,19 +22,18 @@ fn test_entry() {
         field2: vec![4, 5, 6],
     };
 
-    let mut rlp_encoded = vec![];
-    encode(&entry, &mut rlp_encoded);
-    // py_sandbox: `encode_uint_1_bytes_1_2_3_bytes_4_5_6`
-    assert_eq!(&rlp_encoded, &hex!("c9018301020383040506"));
+    let encoded = encode(&entry);
+    // eth_rlp.py: `encode_uint_1_bytes_1_2_3_bytes_4_5_6`
+    assert_eq!(&encoded, &hex!("c9018301020383040506"));
 
-    let entry_decoded: Entry = decode(&rlp_encoded).unwrap();
+    let entry_decoded: Entry = decode(&encoded).unwrap();
     assert_eq!(entry_decoded, entry);
 }
 
 #[test]
 fn test_decoding_entry_errors() {
     let data = [
-        // py_sandbox: `encode_uint_65536_bytes_1_2_3_bytes_4_5_6`
+        // eth_rlp.py: `encode_uint_65536_bytes_1_2_3_bytes_4_5_6`
         (
             &hex!("cc830100008301020383040506") as &[u8],
             Error::ItemPayloadByteLengthTooLarge,
@@ -47,8 +46,8 @@ fn test_decoding_entry_errors() {
         // `encode_uint_1_bytes_1_2_3`
         (&hex!("c50183010203"), Error::ListDecodingIterationEnded),
     ];
-    for (rlp_encoded, err) in data {
-        assert_eq!(decode::<Entry>(rlp_encoded).unwrap_err(), err);
+    for (encoded, err) in data {
+        assert_eq!(decode::<Entry>(encoded).unwrap_err(), err);
     }
 }
 
@@ -61,11 +60,10 @@ fn test_vec_of_entry() {
     };
     let v = vec![entry];
 
-    let mut rlp_encoded = vec![];
-    encode(&v, &mut rlp_encoded);
-    // py_sandbox: `encode_vec_of_uint_1_bytes_1_2_3_bytes_4_5_6`
-    assert_eq!(&rlp_encoded, &hex!("cac9018301020383040506"));
+    let encoded = encode(&v);
+    // eth_rlp.py: `encode_vec_of_uint_1_bytes_1_2_3_bytes_4_5_6`
+    assert_eq!(&encoded, &hex!("cac9018301020383040506"));
 
-    let vec_of_entry_decoded: Vec<Entry> = decode(&rlp_encoded).unwrap();
+    let vec_of_entry_decoded: Vec<Entry> = decode(&encoded).unwrap();
     assert_eq!(vec_of_entry_decoded, v);
 }

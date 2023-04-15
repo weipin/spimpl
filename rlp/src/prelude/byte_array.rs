@@ -21,7 +21,7 @@ impl<const N: usize> Decode<'_> for [u8; N] {
 }
 
 impl<const N: usize> Encode for &[u8; N] {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self).encode_as_single_value(output);
     }
 }
@@ -33,23 +33,22 @@ mod tests {
     #[test]
     fn test_byte_array() {
         let data: [u8; 3] = [1, 2, 3];
-        // py_sandbox: `encode_bytes_1_2_3`
-        let rlp_encoded = &[0x83, 1, 2, 3];
+        // eth_rlp.py: `encode_bytes_1_2_3`
+        let encoded = &[0x83, 1, 2, 3];
 
-        let mut output = vec![];
-        encode(&data, &mut output);
-        assert_eq!(output, rlp_encoded);
+        let output = encode(&data);
+        assert_eq!(output, encoded);
 
         assert_eq!(decode::<[u8; 3]>(&output).unwrap(), data);
     }
 
     #[test]
     fn test_decoding_byte_array_number_does_not_match() {
-        // py_sandbox: `encode_bytes_1_2_3`
-        let rlp_encoded = &[0x83, 1, 2, 3];
+        // eth_rlp.py: `encode_bytes_1_2_3`
+        let encoded = &[0x83, 1, 2, 3];
 
         assert_eq!(
-            decode::<[u8; 4]>(rlp_encoded).unwrap_err(),
+            decode::<[u8; 4]>(encoded).unwrap_err(),
             Error::ListDecodingIterationEnded
         );
     }

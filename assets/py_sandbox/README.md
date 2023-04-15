@@ -3,7 +3,7 @@
 Playgrounds for trials and the generation of testing data.
 
 
-# SETUP
+# SETUP (ONE TIME)
 
 Set up with venv (virtual environments):
 ```

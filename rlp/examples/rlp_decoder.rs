@@ -23,8 +23,9 @@
 //! cargo run --example rlp_decoder -- c7c0c1c0c3c0c1c0
 //! ```
 
-use rlp_types::json::decode_rlp_to_json_value;
 use serde_json::to_string_pretty;
+
+use rlp_types::json::decode_rlp_to_json_value;
 
 fn main() {
     let rlp_hex = std::env::args()

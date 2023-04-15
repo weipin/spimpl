@@ -7,9 +7,13 @@ cargo nextest run
 cargo test --doc
 
 # Tests time-consuming cases
-cargo test --release -- --ignored
+# cargo test --release -- --ignored
+
+cargo test --features "enr/k256"
+
 
 cargo +nightly udeps
+cargo upgrade --dry-run
 
 # cargo +nightly careful test
 
@@ -17,3 +21,4 @@ cargo +nightly udeps
 # cargo miri test
 
 # cargo bench
+# cargo bench record --features "enr/k256"

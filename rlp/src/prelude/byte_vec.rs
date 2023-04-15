@@ -17,21 +17,24 @@ impl<'a> Decode<'a> for Vec<u8> {
 }
 
 impl Encode for &Vec<u8> {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self.as_slice()).encode_as_single_value(output);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::decode;
+    use crate::{decode, encode};
 
     #[test]
     fn test_byte_vec() {
         let data = vec![1, 2, 3];
-        // py_sandbox: `encode_bytes_1_2_3`
-        let rlp_encoded = &[0x83, 1, 2, 3];
+        // eth_rlp.py: `encode_bytes_1_2_3`
+        let encoded = &[0x83, 1, 2, 3];
 
-        assert_eq!(decode::<Vec<u8>>(rlp_encoded).unwrap(), data);
+        let output = encode(&data);
+        assert_eq!(output, encoded);
+
+        assert_eq!(decode::<Vec<u8>>(encoded).unwrap(), data);
     }
 }

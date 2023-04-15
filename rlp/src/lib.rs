@@ -30,7 +30,7 @@ mod types;
 
 pub use decoder::{decode, decode_payload};
 pub use decoding::decode_header_unchecked;
-pub use encoder::encode;
+pub use encoder::{encode, encode_to};
 pub use error::Error;
 pub use list_iter::ListIter;
 pub use prelude::U8;

@@ -7,8 +7,6 @@
 //! Tests from Ethereum Consensus Tests:
 //! https://github.com/ethereum/tests/tree/develop/RLPTests
 
-#![feature(let_chains)]
-
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -29,17 +27,17 @@ fn rlptest() {
         let rlp_data = hex::decode(rlp_hex).unwrap();
 
         // Cases involve big int
-        if let Some(in_str) = d["in"].as_str() && in_str.starts_with("#") {
-            let in_decimal = in_str.strip_prefix("#").unwrap();
-            let n = RlpBigUint(BigUint::parse_bytes(in_decimal.as_bytes(), 10).unwrap());
-            let mut encoded = vec![];
-            encode(&n, &mut encoded);
-            assert_eq!(&encoded, &rlp_data);
+        if let Some(in_str) = d["in"].as_str() {
+            if let Some(in_decimal) = in_str.strip_prefix("#") {
+                let n = RlpBigUint(BigUint::parse_bytes(in_decimal.as_bytes(), 10).unwrap());
+                let encoded = encode(&n);
+                assert_eq!(&encoded, &rlp_data);
 
-            let decoded: RlpBigUint = decode(&rlp_data).unwrap();
-            assert_eq!(decoded, n, "name: {name}");
+                let decoded: RlpBigUint = decode(&rlp_data).unwrap();
+                assert_eq!(decoded, n, "name: {name}");
 
-            continue;
+                continue;
+            }
         };
 
         let encoded = encode_json_value_to_rlp(&d["in"]);

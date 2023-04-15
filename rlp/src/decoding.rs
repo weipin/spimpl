@@ -122,13 +122,14 @@ pub fn decode_header_unchecked(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hex_literal::hex;
+
+    use super::*;
 
     #[test]
     fn test_decode_header_unchecked() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0`
+            // eth_rlp.py: `first_byte_eq_0`
             (ItemType::SingleValue, 0, 1, &hex!("00") as &[u8]),
             // `first_byte_lt_0x7f`
             (ItemType::SingleValue, 0, 1, &hex!("66")),

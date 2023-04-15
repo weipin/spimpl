@@ -29,4 +29,6 @@ pub enum Error {
     ListDecodingIterationEnded,
     #[error("The number of the item list doesn't match the decoding type")]
     ListDecodingNumberDoesNotMatch,
+    #[error("Cannot create a new decoding type from the byte representation")]
+    InvalidByteRepresentaion,
 }

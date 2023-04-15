@@ -4,38 +4,33 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#![feature(test)]
-
-extern crate test;
+use criterion::{criterion_group, criterion_main, Criterion};
 
 use rlp::encode;
-use test::Bencher;
 
-#[bench]
-fn encode_u64(bench: &mut Bencher) {
-    bench.iter(|| {
-        let mut output = vec![];
-        encode(0x1023_4567_89ab_cdefu64, &mut output);
-    })
-}
+fn encode_bench(c: &mut Criterion) {
+    c.bench_function("encode_u64", |b| {
+        b.iter(|| {
+            encode(0x1023_4567_89ab_cdefu64);
+        })
+    });
 
-#[bench]
-fn encode_slice_of_u64(b: &mut test::Bencher) {
-    b.iter(|| {
+    c.bench_function("encode_slice_of_u64", |b| {
         let data: Vec<u64> = (0u64..1000).collect();
 
-        let mut rlp_encoded = vec![];
-        encode(data.as_slice(), &mut rlp_encoded);
-    })
-}
+        b.iter(|| {
+            encode(data.as_slice());
+        })
+    });
 
-// Consumes the vec
-#[bench]
-fn encode_vec_of_u64(b: &mut test::Bencher) {
-    b.iter(|| {
+    c.bench_function("encode_vec_of_u64", |b| {
         let data: Vec<u64> = (0u64..1000).collect();
 
-        let mut rlp_encoded = vec![];
-        encode(&data, &mut rlp_encoded);
-    })
+        b.iter(|| {
+            encode(&data);
+        })
+    });
 }
+
+criterion_group!(benches, encode_bench);
+criterion_main!(benches);

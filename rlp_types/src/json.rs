@@ -10,7 +10,9 @@
 //! For example, the RLP string b"abc" will be represented as the JSON string
 //! "0x616263". It applies to both JSON => RLP and RLP => JSON.
 
-use rlp::{encode, Error, ItemDataSlice, ItemPayloadSlice, ItemType};
+use std::borrow::Cow;
+
+use rlp::{encode_to, Error, ItemDataSlice, ItemPayloadSlice, ItemType};
 use serde_json::Value;
 
 /// Decodes RLP `data` to a JSON `Value`.
@@ -60,7 +62,6 @@ fn decode_payload_to_json_value(
 ///
 /// ```
 /// use rlp_types::json::encode_json_value_to_rlp;
-/// use serde_json;
 ///
 /// let data = "[[],[[]],[[],[[]]]]";
 /// let v = serde_json::from_str(data).unwrap();
@@ -72,17 +73,17 @@ pub fn encode_json_value_to_rlp(value: &Value) -> Vec<u8> {
     match value {
         Value::Number(number) => {
             let n = number.as_u64().unwrap();
-            encode(n, &mut output);
+            encode_to(n, &mut output);
         }
         Value::String(string) => {
             let bytes = string.as_bytes();
             // Converts hex format string to bytes
-            let s = if bytes.starts_with(b"0x") {
-                hex::decode(bytes.strip_prefix(b"0x").unwrap()).unwrap()
+            let bytes: Cow<[u8]> = if let Some(s) = bytes.strip_prefix(b"0x") {
+                hex::decode(s).unwrap().into()
             } else {
-                bytes.to_owned()
+                bytes.into()
             };
-            encode(s.as_slice(), &mut output);
+            encode_to(bytes.as_ref(), &mut output);
         }
         Value::Array(array) => {
             let mut payload = vec![];

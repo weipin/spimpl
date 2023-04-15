@@ -10,20 +10,29 @@ use crate::Encode;
 
 /// Encodes 'value' and appends the result to `output`.
 #[inline]
-pub fn encode<T: Encode>(value: T, output: &mut Vec<u8>) {
-    <T as Encode>::encode(value, output);
+pub fn encode_to<T: Encode>(value: T, output: &mut Vec<u8>) {
+    <T as Encode>::encode_to(value, output);
+}
+
+/// Encodes 'value' and returns the result.
+#[inline]
+pub fn encode<T: Encode>(value: T) -> Vec<u8> {
+    let mut output = vec![];
+    <T as Encode>::encode_to(value, &mut output);
+    output
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hex_literal::hex;
     use parity_rlp;
+
+    use super::*;
 
     #[test]
     fn test_encode_single_value() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0`
+            // eth_rlp.py: `first_byte_eq_0`
             (hex!("00").to_vec(), &hex!("00") as &[u8]),
             // `first_byte_lt_0x7f`
             (hex!("66").to_vec(), &hex!("66")),
@@ -44,16 +53,14 @@ mod tests {
         ];
 
         for (value, encoded) in test_data {
-            let mut output = vec![];
-            encode(value.as_slice(), &mut output);
-            assert_eq!(output, encoded);
+            assert_eq!(encode(&value), encoded);
         }
     }
 
     #[test]
     fn test_encode_list() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0xc0`
+            // eth_rlp.py: `first_byte_eq_0xc0`
             (vec![] as Vec<u16>, &hex!("c0") as &[u8]),
             // `first_byte_lt_0xf7`
             (vec![1, 2, 3], &hex!("c3010203")),
@@ -66,9 +73,7 @@ mod tests {
         ];
 
         for (value, encoded) in test_data {
-            let mut output = vec![];
-            encode(value.as_slice(), &mut output);
-            assert_eq!(output, encoded);
+            assert_eq!(encode(&value), encoded);
         }
     }
 
@@ -76,13 +81,12 @@ mod tests {
     fn test_encode_slice_length_less_than_2_bytes() {
         let data: Vec<u64> = (0u64..=u16::MAX as u64).collect();
 
-        let mut rlp_encoded = vec![];
-        encode(data.as_slice(), &mut rlp_encoded);
+        let encoded = encode(&data);
 
         let mut stream = parity_rlp::RlpStream::new_list(data.len());
         for i in data {
             stream.append(&i);
         }
-        assert_eq!(rlp_encoded, stream.out());
+        assert_eq!(encoded, stream.out());
     }
 }

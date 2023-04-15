@@ -17,13 +17,13 @@ impl<'a> Decode<'a> for &'a [u8] {
 }
 
 impl Encode for &[u8] {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self).encode_as_single_value(output);
     }
 }
 
 impl Encode for &&[u8] {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self).encode_as_single_value(output);
     }
 }
@@ -35,12 +35,11 @@ mod tests {
     #[test]
     fn test_byte_slice() {
         let data: &[u8] = &[1, 2, 3];
-        // py_sandbox: `encode_bytes_1_2_3`
-        let rlp_encoded = &[0x83, 1, 2, 3];
+        // eth_rlp.py: `encode_bytes_1_2_3`
+        let encoded = &[0x83, 1, 2, 3];
 
-        let mut output = vec![];
-        encode(data, &mut output);
-        assert_eq!(output, rlp_encoded);
+        let output = encode(data);
+        assert_eq!(output, encoded);
 
         assert_eq!(decode::<&[u8]>(&output).unwrap(), data);
     }

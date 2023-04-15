@@ -29,11 +29,10 @@ use crate::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 /// use rlp::{decode, encode, U8};
 ///
 /// // Encodes and decodes a `u8` as a single value.
-/// let mut output = vec![];
-/// encode(U8(123), &mut output);
-/// assert_eq!(output, &[0x7b]);
+/// let encoded = encode(U8(123));
+/// assert_eq!(encoded, &[0x7b]);
 ///
-/// let decoded: U8 = decode(&output).unwrap();
+/// let decoded: U8 = decode(&encoded).unwrap();
 /// assert_eq!(decoded.0, 123);
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -58,32 +57,32 @@ impl Decode<'_> for U8 {
 }
 
 impl Encode for U8 {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(strip_left_padding(&self.0.to_be_bytes())).encode_as_single_value(output);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{decode, encode};
     use ::quickcheck_macros::quickcheck;
     use parity_rlp;
+
+    use crate::{decode, encode};
+
+    use super::*;
 
     #[quickcheck]
     fn test_u8(n: u8) -> bool {
         let parity_rlp_encoded = parity_rlp::encode(&n);
 
-        let mut output = vec![];
-        encode(U8(n), &mut output);
+        let output = encode(U8(n));
         output == parity_rlp_encoded && decode::<U8>(&output).unwrap() == U8(n)
     }
 
     #[test]
     fn test_encode_zero() {
-        let mut output = vec![];
-        encode(U8(0), &mut output);
-        // py_sandbox: `encode_uint_0`
+        let output = encode(U8(0));
+        // eth_rlp.py: `encode_uint_0`
         assert_eq!(output, &[0x80]);
     }
 
@@ -92,10 +91,10 @@ mod tests {
         let parity_rlp_encoded = parity_rlp::encode(&0_u64);
         assert_eq!(decode::<U8>(&parity_rlp_encoded).unwrap().0, 0);
 
-        // py_sandbox: `encode_bytes_0`
+        // eth_rlp.py: `encode_bytes_0`
         let left_padded_bytes_rlp_encoded = &[0x00];
         assert_eq!(
-            // py_sandbox: `encode_left_padded_bytes`
+            // `encode_left_padded_bytes`
             decode::<U8>(left_padded_bytes_rlp_encoded).unwrap_err(),
             Error::UintDecodingFoundLeftPadding
         );
@@ -103,12 +102,12 @@ mod tests {
 
     #[test]
     fn test_decoding_u8_with_overflow() {
-        // py_sandbox: `encode_uint_65536`
+        // eth_rlp.py: `encode_uint_65536`
         // 65536 = u16::MAX + 1
-        let rlp_encoded = &[0x83, 1, 0, 0];
+        let encoded = &[0x83, 1, 0, 0];
         assert_eq!(
-            // py_sandbox: `encode_left_padded_bytes`
-            decode::<U8>(rlp_encoded).unwrap_err(),
+            // `encode_left_padded_bytes`
+            decode::<U8>(encoded).unwrap_err(),
             Error::ItemPayloadByteLengthTooLarge
         );
     }

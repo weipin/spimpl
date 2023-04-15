@@ -51,15 +51,16 @@ pub fn decode_payload<'a, T: Decode<'a>>(
 
 #[cfg(test)]
 mod tests {
+    use hex_literal::hex;
+
     use crate::encode;
 
     use super::*;
-    use hex_literal::hex;
 
     #[test]
     fn test_decode_string() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0`
+            // eth_rlp.py: `first_byte_eq_0`
             (hex!("00").to_vec(), &hex!("00") as &[u8]),
             // `first_byte_lt_0x7f`
             (hex!("66").to_vec(), &hex!("66")),
@@ -87,7 +88,7 @@ mod tests {
     #[test]
     fn test_decode_list() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0xc0`
+            // eth_rlp.py: `first_byte_eq_0xc0`
             (vec![], &hex!("c0") as &[u8]),
             // `encode_vec_of_uint_0_1`
             (vec![0_u16, 1], &hex!("c28001")),
@@ -109,10 +110,9 @@ mod tests {
     fn decode_vec_of_u64() {
         // let data: Vec<u64> = (0u64..1000).collect();
         let data: Vec<u64> = (0u64..1000).collect();
-        let mut rlp_encoded = vec![];
-        encode(data.as_slice(), &mut rlp_encoded);
+        let output = encode(&data);
 
-        let decoded: Vec<u64> = decode(&rlp_encoded).unwrap();
+        let decoded: Vec<u64> = decode(&output).unwrap();
         assert_eq!(decoded, data);
     }
 
@@ -120,7 +120,7 @@ mod tests {
     fn test_decode_string_error() {
         let test_data = [
             (&hex!("") as &[u8], Error::EmptyData),
-            // py_sandbox: `first_byte_lt_0xb7_b`
+            // eth_rlp.py: `first_byte_lt_0xb7_b`
             (&hex!("8501020304"), Error::ItemDataWithInvalidByteLength),
         ];
 
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn test_decode_list_error() {
         let test_data = [
-            // py_sandbox: `first_byte_lt_0xf7`
+            // eth_rlp.py: `first_byte_lt_0xf7`
             //       **
             // c3010203
             // c30102

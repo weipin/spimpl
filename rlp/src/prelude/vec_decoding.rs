@@ -39,20 +39,20 @@ mod tests {
 
     #[test]
     fn test_decode_vec_of_u16() {
-        // py_sandbox: `encode_vec_of_uint_1_2_3`
-        let rlp_encoded = &[0xc3, 1, 2, 3];
+        // eth_rlp.py: `encode_vec_of_uint_1_2_3`
+        let encoded = &[0xc3, 1, 2, 3];
 
-        assert_eq!(decode::<Vec<u16>>(rlp_encoded).unwrap(), vec![1_u16, 2, 3]);
+        assert_eq!(decode::<Vec<u16>>(encoded).unwrap(), vec![1_u16, 2, 3]);
     }
 
     #[test]
     fn test_decode_vec_of_u16_with_last_element_overflow() {
-        // py_sandbox: `encode_vec_of_uint_1_2_3_65536`
-        let rlp_encoded = &[0xc7, 1, 2, 3, 0x83, 1, 0, 0];
+        // eth_rlp.py: `encode_vec_of_uint_1_2_3_65536`
+        let encoded = &[0xc7, 1, 2, 3, 0x83, 1, 0, 0];
 
         // 65536 = u16::MAX + 1
         assert_eq!(
-            decode::<Vec<u16>>(rlp_encoded).unwrap_err(),
+            decode::<Vec<u16>>(encoded).unwrap_err(),
             Error::ItemPayloadByteLengthTooLarge
         );
     }
@@ -60,9 +60,9 @@ mod tests {
     #[test]
     fn test_decode_vec_of_u8_slice() {
         let data: Vec<&[u8]> = vec![&[1, 2, 3], &[1, 2, 3], &[1, 2, 3]];
-        // py_sandbox: `encode_vec_of_bytes_1_2_3`
-        let rlp_encoded = hex!("cc830102038301020383010203");
+        // eth_rlp.py: `encode_vec_of_bytes_1_2_3`
+        let encoded = hex!("cc830102038301020383010203");
 
-        assert_eq!(decode::<Vec<&[u8]>>(&rlp_encoded).unwrap(), data);
+        assert_eq!(decode::<Vec<&[u8]>>(&encoded).unwrap(), data);
     }
 }

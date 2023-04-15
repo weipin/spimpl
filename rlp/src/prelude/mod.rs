@@ -9,9 +9,11 @@
 mod byte_array;
 mod byte_slice;
 mod byte_vec;
-mod decode_vec;
-mod encode_vec;
+mod ipv4addr;
+mod ipv6addr;
 mod u8;
 mod uint;
+mod vec_decoding;
+mod vec_encoding;
 
 pub use self::u8::U8;

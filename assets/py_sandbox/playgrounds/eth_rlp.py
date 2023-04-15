@@ -49,6 +49,19 @@ def encode_bytes_1_2_3():
     return rlp.encode(bytes([1, 2, 3]))
 
 
+def encode_bytes_127_0_0_1():
+    return rlp.encode(bytes([127, 0, 0, 1]))
+
+
+def encode_bytes_127_0_0_1_1():
+    return rlp.encode(bytes([127, 0, 0, 1, 1]))
+
+
+# 0:0:0:0:0:ffff:c00a:0x2ff
+def encode_bytes_ipv6addr_octets():
+    return rlp.encode(bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xc0, 0x0a, 0x02, 0xff]))
+
+
 def encode_vec_of_uint_0_1():
     return rlp.encode([0, 1])
 

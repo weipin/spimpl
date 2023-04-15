@@ -4,8 +4,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#![feature(test)]
+/// Represents a sequence number.
+pub type SequenceNumber = u64;
 
-extern crate test;
-
-mod uint_from_bytes;
+/// Represents a node id(address).
+#[derive(rlp::Decode, rlp::Encode)]
+pub struct NodeId(pub [u8; 32]);

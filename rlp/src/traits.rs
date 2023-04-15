@@ -6,13 +6,14 @@
 
 //! Traits types have to implement to support RLP serialization.
 
-use crate::{Error, ItemPayloadSlice, ItemType};
 pub use rlp_derive::*;
+
+use crate::{Error, ItemPayloadSlice, ItemType};
 
 /// Trait for RLP encoding.
 pub trait Encode {
     /// Encodes `self` and appends the result to `output`.
-    fn encode(self, output: &mut Vec<u8>);
+    fn encode_to(self, output: &mut Vec<u8>);
 }
 
 /// Trait for RLP decoding.

@@ -33,6 +33,11 @@ impl<'a> ListIter<'a> {
             remaining_list_payload: list_payload,
         }
     }
+
+    /// Returns the subslice of the list payload which hasn't been decoded.
+    pub fn remaining_list_payload(&self) -> ItemPayloadSlice<'a> {
+        self.remaining_list_payload
+    }
 }
 
 impl<'a> Iterator for ListIter<'a> {
@@ -85,13 +90,14 @@ impl<'a> ListIter<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hex_literal::hex;
+
+    use super::*;
 
     #[test]
     fn test_iter() {
         let test_data = [
-            // py_sandbox: `first_byte_eq_0xc0`
+            // eth_rlp.py: `first_byte_eq_0xc0`
             (0, &hex!("c0") as &[u8]),
             // `first_byte_lt_0xf7`
             (3, &hex!("c3010203")),
@@ -117,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_new_iter_from_single_value_item_should_fail() {
-        // py_sandbox: `encode_uint_65536`
+        // eth_rlp.py: `encode_uint_65536`
         assert_eq!(
             ItemDataSlice(&hex!("83010000")).list_iter().unwrap_err(),
             Error::ItemTypeDoesNotMatch

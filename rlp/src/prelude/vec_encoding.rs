@@ -6,16 +6,16 @@
 
 //! Implements RLP encoding for `Vec<T>` and its slice.
 
-use crate::{encode, Encode, ItemPayloadSlice};
+use crate::{encode_to, Encode, ItemPayloadSlice};
 
 impl<'a, T> Encode for &'a [T]
 where
     &'a T: Encode,
 {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         let mut payload = vec![];
         self.iter().for_each(|element| {
-            encode(element, &mut payload);
+            encode_to(element, &mut payload);
         });
         ItemPayloadSlice(&payload).encode_as_list(output);
     }
@@ -25,8 +25,8 @@ impl<'a, T> Encode for &'a Vec<T>
 where
     &'a T: Encode,
 {
-    fn encode(self, output: &mut Vec<u8>) {
-        <&'a [T] as Encode>::encode(self.as_slice(), output);
+    fn encode_to(self, output: &mut Vec<u8>) {
+        <&'a [T] as Encode>::encode_to(self.as_slice(), output);
     }
 }
 
@@ -39,8 +39,7 @@ mod tests {
     #[test]
     fn test_encode_slice_of_u16() {
         let data: &[u16] = &[1, 2, 3];
-        let mut output = vec![];
-        encode(data, &mut output);
+        let output = encode(data);
 
         // py_playground: `encode_vec_of_uint_1_2_3`
         assert_eq!(output, hex!("c3010203"));
@@ -49,8 +48,7 @@ mod tests {
     #[test]
     fn test_encode_vec_of_u16() {
         let data: Vec<u16> = vec![1, 2, 3];
-        let mut output = vec![];
-        encode(&data, &mut output);
+        let output = encode(&data);
 
         // py_playground: `encode_vec_of_uint_1_2_3`
         assert_eq!(output, hex!("c3010203"));
@@ -59,8 +57,7 @@ mod tests {
     #[test]
     fn test_encode_slice_of_byte_slice() {
         let data: &[&[u8]] = &[&[1, 2, 3], &[1, 2, 3], &[1, 2, 3]];
-        let mut output = vec![];
-        encode(data, &mut output);
+        let output = encode(data);
 
         // py_playground: `encode_vec_of_bytes_1_2_3`
         assert_eq!(output, hex!("cc830102038301020383010203"));
@@ -69,8 +66,7 @@ mod tests {
     #[test]
     fn test_encode_vec_of_byte_slice() {
         let data: Vec<&[u8]> = vec![&[1, 2, 3], &[1, 2, 3], &[1, 2, 3]];
-        let mut output = vec![];
-        encode(&data, &mut output);
+        let output = encode(&data);
 
         // py_playground: `encode_vec_of_bytes_1_2_3`
         assert_eq!(output, hex!("cc830102038301020383010203"));

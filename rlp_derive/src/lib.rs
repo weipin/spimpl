@@ -29,7 +29,7 @@ pub fn derive_encode(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let expanded = quote! {
         // The generated impl.
         impl #impl_generics rlp::Encode for &#name #ty_generics #where_clause {
-            fn encode(self, output: &mut Vec<u8>) {
+            fn encode_to(self, output: &mut Vec<u8>) {
                 #encoding
             }
         }
@@ -48,7 +48,7 @@ pub fn derive_decode(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let name = input.ident;
 
     let generics = add_trait_decode_bounds(input.generics);
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (_, ty_generics, where_clause) = generics.split_for_impl();
 
     let item_type = decoding_struct_item_type(&input.data);
     let decoding = decode_struct_fields(&name, &input.data);
@@ -56,8 +56,7 @@ pub fn derive_decode(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let expanded = quote! {
 
         // The generated impl.
-        impl #impl_generics rlp::Decode<'a> for #name #ty_generics #where_clause {
-        // impl<'a> rlp::Decode<'a> for #name<'a> {
+        impl<'a> rlp::Decode<'a> for #name #ty_generics #where_clause {
             const TYPE: rlp::ItemType = #item_type;
 
             fn decode(payload: rlp::ItemPayloadSlice<'a>) -> Result<Self, rlp::Error> {
@@ -89,16 +88,16 @@ fn encode_struct_fields(data: &Data) -> TokenStream {
                     // Expands to expressions like
                     //
                     // ```
-                    // encode(&self.x, &mut payload);
-                    // encode(&self.y, &mut payload);
-                    // encode(&self.z, &mut payload);
+                    // encode_to(&self.x, &mut payload);
+                    // encode_to(&self.y, &mut payload);
+                    // encode_to(&self.z, &mut payload);
                     // ```
                     //
                     // but using fully qualified function call syntax.
                     let recurse = fields.named.iter().map(|f| {
                         let name = &f.ident;
                         quote_spanned! {f.span()=>
-                            rlp::encode(&self.#name, &mut payload);
+                            rlp::encode_to(&self.#name, &mut payload);
                         }
                     });
                     quote! {
@@ -113,7 +112,7 @@ fn encode_struct_fields(data: &Data) -> TokenStream {
                         // For "newtype", encode as a single value
                         let field = fields.unnamed.first().unwrap();
                         quote_spanned! {field.span()=>
-                            rlp::encode(&self.0, output);
+                            rlp::encode_to(&self.0, output);
                         }
                     } else {
                         // tuple struct not supported

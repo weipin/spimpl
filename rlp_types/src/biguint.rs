@@ -15,7 +15,7 @@ use rlp::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 pub struct RlpBigUint(pub BigUint);
 
 impl Encode for &RlpBigUint {
-    fn encode(self, output: &mut Vec<u8>) {
+    fn encode_to(self, output: &mut Vec<u8>) {
         ItemPayloadSlice(strip_left_padding(&self.0.to_bytes_be())).encode_as_single_value(output);
     }
 }
@@ -37,9 +37,11 @@ impl<'a> Decode<'a> for RlpBigUint {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hex_literal::hex;
+
     use rlp::{decode, encode};
+
+    use super::*;
 
     #[test]
     fn test_biguint() {
@@ -51,14 +53,13 @@ mod tests {
             .unwrap(),
         );
 
-        let mut encoded = vec![];
-        encode(&n, &mut encoded);
+        let output = encode(&n);
         assert_eq!(
-            encoded,
+            output,
             hex!("9c0100020003000400050006000700080009000a000b000c000d000e01")
         );
 
-        let decoded: RlpBigUint = decode(&encoded).unwrap();
+        let decoded: RlpBigUint = decode(&output).unwrap();
         assert_eq!(decoded, n);
     }
 }

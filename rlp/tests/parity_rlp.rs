@@ -8,7 +8,7 @@
 //! https://github.com/paritytech/parity-common/tree/master/rlp/tests
 
 use hex_literal::hex;
-use rlp::{decode, encode, Decode, Encode, Error, ItemPayloadSlice, ItemType};
+use rlp::{decode, encode, encode_to, Decode, Encode, Error, ItemPayloadSlice, ItemType};
 
 #[test]
 fn test_rlp_data_length_check() {
@@ -120,10 +120,10 @@ fn test_nested_list_roundtrip() {
     struct Inner(u64, u64);
 
     impl Encode for &Inner {
-        fn encode(self, output: &mut Vec<u8>) {
+        fn encode_to(self, output: &mut Vec<u8>) {
             let mut payload = vec![];
-            encode(self.0, &mut payload);
-            encode(self.1, &mut payload);
+            encode_to(self.0, &mut payload);
+            encode_to(self.1, &mut payload);
 
             ItemPayloadSlice(&payload).encode_as_list(output);
         }
@@ -151,8 +151,8 @@ fn test_nested_list_roundtrip() {
     where
         &'a T: Encode,
     {
-        fn encode(self, output: &mut Vec<u8>) {
-            encode(&self.0, output);
+        fn encode_to(self, output: &mut Vec<u8>) {
+            encode_to(&self.0, output);
         }
     }
 
@@ -168,15 +168,13 @@ fn test_nested_list_roundtrip() {
     let items = (0..4).map(|i| Inner(i, i + 1)).collect();
     let nest = Nest(items);
 
-    let mut encoded = vec![];
-    encode(&nest, &mut encoded);
+    let encoded = encode(&nest);
     let decoded = decode(&encoded).unwrap();
     assert_eq!(nest, decoded);
 
     let nest2 = Nest(vec![nest.clone(), nest]);
 
-    let mut encoded = vec![];
-    encode(&nest2, &mut encoded);
+    let encoded = encode(&nest2);
     let decoded = decode(&encoded).unwrap();
     assert_eq!(nest2, decoded);
 }

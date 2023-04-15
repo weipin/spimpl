@@ -8,14 +8,23 @@ edition = "2021"
 [dependencies]
 extensions = { path = "../extensions" }
 rlp_derive = { path = "../rlp_derive" }
-thiserror = "1.0.37"
+thiserror = "1.0.40"
 
 [dev-dependencies]
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
 parity_rlp = { version = "0.5.2", package = "rlp" }
-hex-literal = "0.3.4"
-serde_json = "1.0.79"
+hex-literal = "0.4.1"
+serde_json = "1.0.95"
 hex = "0.4.3"
 rlp_types = { path = "../rlp_types" }
 num-bigint = "0.4.3"
+criterion = "0.4.0"
+
+[[bench]]
+name = "encode"
+harness = false
+
+[[bench]]
+name = "decode"
+harness = false
