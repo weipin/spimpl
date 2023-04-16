@@ -23,13 +23,13 @@ mod tests {
     use base64::engine::DecodeEstimate;
     use base64::Engine;
 
-    use crate::base64::BASE64_ENGINE;
+    use crate::base64::base64_engine;
 
     use super::*;
 
     #[test]
     fn max_base64_encoded_byte_length() {
-        let decoded_estimate = BASE64_ENGINE
+        let decoded_estimate = base64_engine()
             .internal_decoded_len_estimate(MAXIMUM_BASE64_ENCODED_BYTE_LENGTH)
             .decoded_len_estimate();
         assert_eq!(decoded_estimate, MAXIMUM_RLP_ENCODED_BYTE_LENGTH);

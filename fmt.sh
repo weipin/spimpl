@@ -2,9 +2,7 @@
 
 sed -I "" 's/# format_code_in_doc_comments = true/format_code_in_doc_comments = true/' rustfmt.toml
 
-rustup default nightly
-cargo fmt
-rustup default stable
+cargo +nightly fmt
 
 sed -I "" 's/^format_code_in_doc_comments = true/# format_code_in_doc_comments = true/' rustfmt.toml
 

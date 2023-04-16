@@ -20,7 +20,7 @@ PUBLIC_KEY_DATA = bytes.fromhex(
     '03ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138')
 EXTRA_ENTROPY = bytes.fromhex('baaaaaadbaaaaaadbaaaaaadbaaaaaadbaaaaaadbaaaaaadbaaaaaadbaaaaaad')
 
-
+# Ok cases
 def example_record_without_extra_entropy():
     address = _node_address([1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4],
                             False)
@@ -46,7 +46,7 @@ def example_record_mixed_with_unknown_pairs_address():
          PUBLIC_KEY_DATA, 'sz', 'xxx', 'udp', UDP4, 'uz', 'xxx'])
 
 
-def record_encoded_size_eq_300():
+def record_encoded_size_eq_300_base64_size_eq_400():
     return _node_address([1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4,
                           'z', 'x' * 162])
 
@@ -59,14 +59,19 @@ def full_record():
 
 
 # error cases
-def record_encoded_size_eq_301():
+def record_encoded_size_eq_301_base64_size_eq_402():
     return _node_address([1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4,
                           'z', 'x' * 163])
 
 
 def example_record_urlbase64_with_padding():
-    return _node_address_with_urlbase64_padding_enabled(
+    return _node_address_with_padding_enabled(
         [1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4])
+
+
+def example_record_without_extra_entropy_urlbase64_with_padding():
+    return _node_address_with_padding_enabled(
+        [1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4], extra_entropy=False)
 
 
 def example_record_base64():
@@ -244,12 +249,20 @@ def _node_address(content_items, extra_entropy=True, key=None):
     return "enr:" + urlsafe_b64encode(record_rlp_encoded).decode('utf-8').rstrip('=')
 
 
-def _node_address_with_urlbase64_padding_enabled(content_items):
+def _node_address_with_padding_enabled(content_items, extra_entropy=True, key=None):
+    if key is None:
+        key = KEY
+
     content_rlp_encoded = encode(content_items)
     h = keccak(content_rlp_encoded)
-    content_signature = KEY.sign_digest_deterministic(h, hashfunc=sha256,
-                                                      sigencode=sigencode_string_canonize,
-                                                      extra_entropy=EXTRA_ENTROPY)
+    if extra_entropy:
+        content_signature = key.sign_digest_deterministic(h, hashfunc=sha256,
+                                                          sigencode=sigencode_string_canonize,
+                                                          extra_entropy=EXTRA_ENTROPY)
+    else:
+        content_signature = key.sign_digest_deterministic(h, hashfunc=sha256,
+                                                          sigencode=sigencode_string_canonize)
+
     record_rlp_items = [content_signature] + content_items
     record_rlp_encoded = encode(record_rlp_items)
 

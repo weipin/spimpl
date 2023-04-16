@@ -29,7 +29,7 @@ mod tests;
 mod textual_form;
 mod types;
 
-pub use crate::base64::BASE64_ENGINE;
+pub use crate::base64::base64_engine;
 pub use builder::Builder;
 pub use error::Error;
 pub use publishable_record::PublishableRecord;

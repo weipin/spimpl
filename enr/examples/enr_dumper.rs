@@ -15,7 +15,7 @@
 //! ```
 
 use base64::Engine;
-use enr::BASE64_ENGINE;
+use enr::base64_engine;
 use serde_json::to_string_pretty;
 
 use rlp_types::json::decode_rlp_to_json_value;
@@ -26,7 +26,7 @@ fn main() {
         .expect("Error: the parameter is missing");
     let base64 = enr_address.strip_prefix("enr:").unwrap_or(&enr_address);
 
-    let rlp_data = match BASE64_ENGINE.decode(base64) {
+    let rlp_data = match base64_engine().decode(base64) {
         Ok(decoded) => decoded,
         Err(e) => {
             println!("Decoding BASE64 failed: {e}");

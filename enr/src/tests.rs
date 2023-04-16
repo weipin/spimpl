@@ -41,7 +41,8 @@ mod tests {
     fn test_record_to_address_and_from_address_with_scheme<S: Scheme>() {
         let test_data = [
             (
-                "example record",
+                // eth_enr_v4.py: `example_record`
+                "example_record",
                 false,
                 ContentData {
                     seq: 1,
@@ -52,7 +53,7 @@ mod tests {
                 EXAMPLE_RECORD_ADDRESS_WITH_EXTRA_ENTROPY,
             ),
             (
-                "v4 minimal",
+                "minimal_record",
                 false,
                 ContentData {
                     seq: 1,
@@ -61,7 +62,7 @@ mod tests {
                 "enr:-HW4QF9wuyyItfemQw2A77eAwwts7FRu-V8f7FLyIL04XJV5M0NJ2iaCcoByzCo9YoVWDDNY-_VMAVEobwrTLwcGD4wBgmlkgnY0iXNlY3AyNTZrMaEDymNMrg1JrLQB2KTGtv6MVbcNEVv0AHacwUAPMljNMTg",
             ),
             (
-                "v4 full record",
+                "full_record",
                 false,
                 ContentData {
                     seq: 1,
@@ -76,7 +77,7 @@ mod tests {
                 "enr:-LC4QAqty4LtjwXT4hZ8npmnvtYYinC6xs2UcKMV0X-Kj52YbY8VFeEbO-KeRwpti67IYynVRze8rrkvkgu52zMTo4UBgmlkgnY0gmlwhH8AAAGDaXA2kAAAAAAAAAAAAAD__8AKAv-Jc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN0Y3CCdl6EdGNwNoL__oN1ZHCCdl-EdWRwNoL__w",
             ),
             (
-                "example record mixed with unknown pairs",
+                "example_record_mixed_with_unknown_pairs_address",
                 true,
                 ContentData {
                     seq: 1,
@@ -87,7 +88,7 @@ mod tests {
                 "enr:-Km4QBamCR-qZyVpUKk3yhJ4g9qDS5Yvt1U0eTl-1CHXgRI4R92EwjNbfE9LmBqUVkE5yDWq_hqTQCsDNdnUwSMKKfEBgmFfg3h4eIJpZIJ2NINpZV-DeHh4gmlwhH8AAAGDaXpfg3h4eIlzZWNwMjU2azGhA8pjTK4NSay0Adikxrb-jFW3DRFb9AB2nMFADzJYzTE4gnN6g3h4eIN1ZHCCdl-CdXqDeHh4",
             ),
             (
-                "record encoded size equals 300 bytes",
+                "record_encoded_size_eq_300_base64_size_eq_400",
                 true,
                 ContentData {
                     seq: 1,
@@ -226,8 +227,8 @@ mod tests {
     fn test_errors_with_scheme<S: Scheme>() {
         let test_data = [
             (
-                // eth_enr_v4.py: `record_encoded_size_eq_301`
-                "record_encoded_size_eq_301",
+                // eth_enr_v4.py: `record_encoded_size_eq_301_base64_size_eq_402`
+                "record_encoded_size_eq_301_base64_size_eq_402",
                 Error::MaximumRecordRlpEncodedByteLengthExceeded,
                 "enr:-QEquEBxABglcZbIGKJ8RHDCp2Ft59tdf61RhV3XXf2BKTlKE2XwzNfihH-46hKkANsXaGRwH8Dp7a3lTrKiv2FMMaFYAYJpZIJ2NIJpcIR_AAABiXNlY3AyNTZrMaEDymNMrg1JrLQB2KTGtv6MVbcNEVv0AHacwUAPMljNMTiDdWRwgnZferijeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA",
             ),

@@ -6,8 +6,7 @@
 
 //! Base64 encoding and decoding
 
-use base64::engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig};
-use base64::{alphabet, Engine};
+use base64::Engine;
 
 use crate::constants::{MAXIMUM_BASE64_ENCODED_BYTE_LENGTH, MAXIMUM_RLP_ENCODED_BYTE_LENGTH};
 use crate::{Error, RecordRlpEncoded};
@@ -16,7 +15,7 @@ impl RecordRlpEncoded {
     /// Encodes a `RecordRlpEncoded` to its base64 from.
     pub(crate) fn to_base64(&self) -> Vec<u8> {
         let mut output = vec![0; MAXIMUM_BASE64_ENCODED_BYTE_LENGTH];
-        let size = BASE64_ENGINE.encode_slice(&self.0, &mut output).unwrap();
+        let size = base64_engine().encode_slice(&self.0, &mut output).unwrap();
         output.truncate(size);
 
         output
@@ -29,7 +28,7 @@ impl RecordRlpEncoded {
         }
 
         let mut output = vec![0; MAXIMUM_RLP_ENCODED_BYTE_LENGTH];
-        let size = BASE64_ENGINE
+        let size = base64_engine()
             .decode_slice(s, &mut output)
             .map_err(|_| Error::DecodingFailedForInvalidInput)?;
         if size > MAXIMUM_RLP_ENCODED_BYTE_LENGTH {
@@ -41,11 +40,7 @@ impl RecordRlpEncoded {
     }
 }
 
-/// The base64 engine with options as per spec.
-pub static BASE64_ENGINE: GeneralPurpose = GeneralPurpose::new(
-    &alphabet::URL_SAFE,
-    GeneralPurposeConfig::new()
-        .with_encode_padding(false)
-        .with_decode_allow_trailing_bits(false)
-        .with_decode_padding_mode(DecodePaddingMode::RequireNone),
-);
+/// Returns the base64 engine with options as per spec.
+pub const fn base64_engine() -> &'static base64::engine::GeneralPurpose {
+    &base64::engine::general_purpose::URL_SAFE_NO_PAD
+}
