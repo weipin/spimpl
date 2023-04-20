@@ -52,15 +52,25 @@ mod tests {
     fn test_ipv4addr_decoding_errors() {
         let test_data = [
             // eth_rlp.py: `encode_bytes_1_2_3`
-            (Error::InvalidByteRepresentaion, &hex!("83010203") as &[u8]),
-            // `encode_bytes_127_0_0_1_1`
-            (Error::InvalidByteRepresentaion, &hex!("857f00000101")),
-            // `encode_uint_0`
-            (Error::InvalidByteRepresentaion, &hex!("80")),
+            (
+                "encode_bytes_1_2_3",
+                Error::InvalidByteRepresentaion,
+                &hex!("83010203") as &[u8],
+            ),
+            (
+                "encode_bytes_127_0_0_1_1",
+                Error::InvalidByteRepresentaion,
+                &hex!("857f00000101"),
+            ),
+            (
+                "encode_uint_0",
+                Error::InvalidByteRepresentaion,
+                &hex!("80"),
+            ),
         ];
 
-        for (err, bytes) in test_data {
-            assert_eq!(err, decode::<Ipv4Addr>(&bytes).unwrap_err());
+        for (test_name, err, bytes) in test_data {
+            assert_eq!(err, decode::<Ipv4Addr>(&bytes).unwrap_err(), "{test_name}");
         }
     }
 }

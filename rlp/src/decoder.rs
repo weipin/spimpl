@@ -61,27 +61,23 @@ mod tests {
     fn test_decode_string() {
         let test_data = [
             // eth_rlp.py: `first_byte_eq_0`
-            (hex!("00").to_vec(), &hex!("00") as &[u8]),
-            // `first_byte_lt_0x7f`
-            (hex!("66").to_vec(), &hex!("66")),
-            // `first_byte_eq_0x7f`
-            (hex!("7f").to_vec(), &hex!("7f")),
-            // `first_byte_eq_0x80`
-            (hex!("").to_vec(), &hex!("80")),
-            // `first_byte_lt_0xb7_a`
-            (hex!("80").to_vec(), &hex!("8180")),
-            // `first_byte_lt_0xb7_b`
-            (hex!("0102030405").to_vec(), &hex!("850102030405")),
-            // `first_byte_eq_0xb7`
-            ((0..55).collect::<Vec<u8>>(),  &hex!("b7000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
-            // `first_byte_eq_0xb8`
-            ((0..56).collect::<Vec<u8>>(), &hex!("b838000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
-            // `first_byte_lt_0xbf`
-            ((0..60).collect::<Vec<u8>>(), &hex!("b83c000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
+            ("first_byte_eq_0", hex!("00").to_vec(), &hex!("00") as &[u8]),
+            ("first_byte_lt_0x7f", hex!("66").to_vec(), &hex!("66")),
+            ("first_byte_eq_0x7f", hex!("7f").to_vec(), &hex!("7f")),
+            ("first_byte_eq_0x80", hex!("").to_vec(), &hex!("80")),
+            ("first_byte_lt_0xb7_a", hex!("80").to_vec(), &hex!("8180")),
+            ("first_byte_lt_0xb7_b", hex!("0102030405").to_vec(), &hex!("850102030405")),
+            ("first_byte_eq_0xb7", (0..55).collect::<Vec<u8>>(),  &hex!("b7000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
+            ("first_byte_eq_0xb8", (0..56).collect::<Vec<u8>>(), &hex!("b838000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
+            ("first_byte_lt_0xbf", (0..60).collect::<Vec<u8>>(), &hex!("b83c000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
         ];
 
-        for (value, data) in test_data {
-            assert_eq!(decode::<Vec<u8>>(data).unwrap(), value.to_vec());
+        for (test_name, value, data) in test_data {
+            assert_eq!(
+                decode::<Vec<u8>>(data).unwrap(),
+                value.to_vec(),
+                "{test_name}"
+            );
         }
     }
 
@@ -89,21 +85,20 @@ mod tests {
     fn test_decode_list() {
         let test_data = [
             // eth_rlp.py: `first_byte_eq_0xc0`
-            (vec![], &hex!("c0") as &[u8]),
-            // `encode_vec_of_uint_0_1`
-            (vec![0_u16, 1], &hex!("c28001")),
-            // `first_byte_lt_0xf7`
-            (vec![1_u16, 2, 3], &hex!("c3010203")),
-            // `first_byte_eq_0xf7`
-            ((0..55).collect::<Vec<u16>>(), &hex!("f7800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
-            // `first_byte_eq_0xf81
-            ((0..56).collect::<Vec<u16>>(), &hex!("f838800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
-            // `first_byte_lt_ff`
-            ((0..60).collect::<Vec<u16>>(), &hex!("f83c800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
+            ("first_byte_eq_0xc0", vec![], &hex!("c0") as &[u8]),
+            ("encode_vec_of_uint_0_1", vec![0_u16, 1], &hex!("c28001")),
+            ("first_byte_lt_0xf7", vec![1_u16, 2, 3], &hex!("c3010203")),
+            ("first_byte_eq_0xf7", (0..55).collect::<Vec<u16>>(), &hex!("f7800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
+            ("first_byte_eq_0xf81", (0..56).collect::<Vec<u16>>(), &hex!("f838800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
+            ("first_byte_lt_ff", (0..60).collect::<Vec<u16>>(), &hex!("f83c800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
         ];
 
-        for (value, data) in test_data {
-            assert_eq!(decode::<Vec<u16>>(data).unwrap(), value.to_vec());
+        for (test_name, value, data) in test_data {
+            assert_eq!(
+                decode::<Vec<u16>>(data).unwrap(),
+                value.to_vec(),
+                "{test_name}"
+            );
         }
     }
     #[test]
@@ -137,12 +132,14 @@ mod tests {
             // c3010203
             // c30102
             (
+                "first_byte_lt_0xf7",
                 &hex!("c30102") as &[u8],
                 Error::ItemDataWithInvalidByteLength,
             ),
             // `encode_uint_65536_bytes_1_2_3_bytes_4_5_6`
             // 65536 = u16::MAX + 1
             (
+                "encode_uint_65536_bytes_1_2_3_bytes_4_5_6",
                 &hex!("cc830100008301020383040506"),
                 Error::ItemPayloadByteLengthTooLarge,
             ),
@@ -151,13 +148,14 @@ mod tests {
             // cc830102038301020383010203
             // ccb70102038301020383010203
             (
+                "encode_vec_of_bytes_1_2_3",
                 &hex!("ccb70102038301020383010203"),
                 Error::ItemDataWithInvalidByteLength,
             ),
         ];
 
-        for (data, error) in test_data {
-            assert_eq!(decode::<Vec<u16>>(data).unwrap_err(), error);
+        for (test_name, data, error) in test_data {
+            assert_eq!(decode::<Vec<u16>>(data).unwrap_err(), error, "{test_name}");
         }
     }
 }

@@ -32,6 +32,11 @@ fn build_immutable_example_record() {
     let record_address = record.to_textual_form::<Schemev4>().unwrap();
     // Ensures mock data is not used in the production environment.
     assert_ne!(record_address, EXAMPLE_RECORD_ADDRESS_WITH_EXTRA_ENTROPY);
+
+    let record = Record::from_textual_form::<Schemev4>(&record_address).unwrap();
+    assert_eq!(record.seq(), 1);
+    assert_eq!(record.ip4().unwrap(), EXAMPLE_IP4);
+    assert_eq!(record.udp4().unwrap(), EXAMPLE_UDP4);
 }
 
 #[test]

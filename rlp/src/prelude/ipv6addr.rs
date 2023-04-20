@@ -52,15 +52,13 @@ mod tests {
     fn test_ipv6addr_decoding_errors() {
         let test_data = [
             // eth_rlp.py: `encode_bytes_1_2_3`
-            (Error::InvalidByteRepresentaion, &hex!("83010203") as &[u8]),
-            // `first_byte_eq_0xb7`
-            (Error::InvalidByteRepresentaion, &hex!("b7000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
-            // `encode_uint_0`
-            (Error::InvalidByteRepresentaion, &hex!("80")),
+            ("encode_bytes_1_2_3", Error::InvalidByteRepresentaion, &hex!("83010203") as &[u8]),
+            ("first_byte_eq_0xb7", Error::InvalidByteRepresentaion, &hex!("b7000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
+            ("encode_uint_0", Error::InvalidByteRepresentaion, &hex!("80")),
         ];
 
-        for (err, bytes) in test_data {
-            assert_eq!(err, decode::<Ipv6Addr>(&bytes).unwrap_err());
+        for (test_name, err, bytes) in test_data {
+            assert_eq!(err, decode::<Ipv6Addr>(&bytes).unwrap_err(), "{test_name}");
         }
     }
 }

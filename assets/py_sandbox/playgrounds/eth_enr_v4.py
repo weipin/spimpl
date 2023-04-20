@@ -58,6 +58,17 @@ def full_record():
          'udp6', UDP6])
 
 
+def construct_with_signature_and_content_items():
+    signature_hex = '7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c'
+    content_signature = bytes.fromhex(signature_hex)
+    content_items = [1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4]
+
+    record_rlp_items = [content_signature] + content_items
+    record_rlp_encoded = encode(record_rlp_items)
+
+    return "enr:" + urlsafe_b64encode(record_rlp_encoded).decode('utf-8').rstrip('=')
+
+
 # error cases
 def record_encoded_size_eq_301_base64_size_eq_402():
     return _node_address([1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4,
@@ -218,10 +229,23 @@ def invalid_signature_data():
 
 
 def invalid_signature():
+    # See `construct_with_signature_and_content_items` for the correct version
     signature_hex = '7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c'
     signature_hex = 'f' + signature_hex[1:]
     content_signature = bytes.fromhex(signature_hex)
     content_items = [1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4]
+
+    record_rlp_items = [content_signature] + content_items
+    record_rlp_encoded = encode(record_rlp_items)
+
+    return "enr:" + urlsafe_b64encode(record_rlp_encoded).decode('utf-8').rstrip('=')
+
+
+def invalid_signature_a():
+    signature_hex = '7098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c'
+    content_signature = bytes.fromhex(signature_hex)
+    # UDP4 -> UDP4_1
+    content_items = [1, 'id', 'v4', 'ip', IP4, 'secp256k1', PUBLIC_KEY_DATA, 'udp', UDP4_1]
 
     record_rlp_items = [content_signature] + content_items
     record_rlp_encoded = encode(record_rlp_items)

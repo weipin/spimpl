@@ -98,25 +98,22 @@ mod tests {
     fn test_iter() {
         let test_data = [
             // eth_rlp.py: `first_byte_eq_0xc0`
-            (0, &hex!("c0") as &[u8]),
-            // `first_byte_lt_0xf7`
-            (3, &hex!("c3010203")),
-            // `first_byte_eq_0xf7`
-            (55, &hex!("f7800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
-            // `first_byte_eq_0xf8`
-            (56, &hex!("f838800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
-            // `first_byte_lt_ff`
-            (60, &hex!("f83c800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
+            ("first_byte_eq_0xc00", 0, &hex!("c0") as &[u8]),
+            ("first_byte_lt_0xf7", 3, &hex!("c3010203")),
+            ("first_byte_eq_0xf7", 55, &hex!("f7800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536")),
+            ("first_byte_eq_0xf8", 56, &hex!("f838800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637")),
+            ("first_byte_lt_ff", 60, &hex!("f83c800102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b")),
         ];
 
-        for (item_num, data) in test_data {
+        for (test_name, item_num, data) in test_data {
             assert_eq!(
                 ItemDataSlice(data)
                     .list_iter()
                     .unwrap()
                     .collect::<Vec<_>>()
                     .len(),
-                item_num
+                item_num,
+                "{test_name}",
             );
         }
     }

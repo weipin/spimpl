@@ -53,6 +53,17 @@ mod tests {
                 EXAMPLE_RECORD_ADDRESS_WITH_EXTRA_ENTROPY,
             ),
             (
+                "construct_with_signature_and_content_items",
+                false,
+                ContentData {
+                    seq: 1,
+                    ip4: Some(EXAMPLE_IP4),
+                    udp4: Some(EXAMPLE_UDP4),
+                    ..Default::default()
+                },
+                EXAMPLE_RECORD_ADDRESS_WITH_EXTRA_ENTROPY,
+            ),
+            (
                 "minimal_record",
                 false,
                 ContentData {
@@ -73,7 +84,6 @@ mod tests {
                     udp6: Some(EXAMPLE_UDP6),
                     tcp6: Some(EXAMPLE_TCP6),
                 },
-                // eth_enr_v4.py: `full_record`
                 "enr:-LC4QAqty4LtjwXT4hZ8npmnvtYYinC6xs2UcKMV0X-Kj52YbY8VFeEbO-KeRwpti67IYynVRze8rrkvkgu52zMTo4UBgmlkgnY0gmlwhH8AAAGDaXA2kAAAAAAAAAAAAAD__8AKAv-Jc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN0Y3CCdl6EdGNwNoL__oN1ZHCCdl-EdWRwNoL__w",
             ),
             (
@@ -386,6 +396,11 @@ mod tests {
                 "invalid_signature",
                 Error::InvalidSignature,
                 "enr:-IS4QPCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8"
+            ),
+            (
+                "invalid_signature_a",
+                Error::InvalidSignature,
+                "enr:-IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCC__8"
             ),
         ];
 
