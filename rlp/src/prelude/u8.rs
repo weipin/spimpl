@@ -6,11 +6,9 @@
 
 //! Implements RLP for `u8`.
 
-use std::mem::size_of;
+use extensions::new_u8_from_be_bytes_with_left_padding;
 
-use extensions::strip_left_padding;
-
-use crate::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
+use super::uint::{impl_decode_for_uint, impl_encode_for_uint};
 
 /// Type wraps `u8`.
 ///
@@ -38,28 +36,23 @@ use crate::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct U8(pub u8);
 
-impl Decode<'_> for U8 {
-    const TYPE: ItemType = ItemType::SingleValue;
-
-    fn decode(payload: ItemPayloadSlice) -> Result<Self, Error> {
-        if payload.0.len() > size_of::<u8>() {
-            return Err(Error::ItemPayloadByteLengthTooLarge);
-        }
-        if payload.0.is_empty() {
-            return Ok(U8(0));
-        }
-        if *payload.0.first().unwrap() == 0 {
-            return Err(Error::UintDecodingFoundLeftPadding);
-        }
-
-        Ok(U8(*payload.0.first().unwrap()))
+impl U8 {
+    /// Return the memory representation of this integer as a byte array in
+    /// big-endian (network) byte order.
+    ///
+    /// Implemented to fulfil the macro `impl_encode_for_uint`.
+    #[inline]
+    pub const fn to_be_bytes(self) -> [u8; 1] {
+        self.0.to_be_bytes()
     }
 }
 
-impl Encode for U8 {
-    fn encode_to(self, output: &mut Vec<u8>) {
-        ItemPayloadSlice(strip_left_padding(&self.0.to_be_bytes())).encode_as_single_value(output);
-    }
+impl_decode_for_uint!(U8, U8(0), new_u8_newtype_from_be_bytes_with_left_padding);
+impl_encode_for_uint!(U8);
+
+#[inline]
+pub fn new_u8_newtype_from_be_bytes_with_left_padding(bytes: &[u8]) -> U8 {
+    U8(new_u8_from_be_bytes_with_left_padding(bytes))
 }
 
 #[cfg(test)]
@@ -88,15 +81,11 @@ mod tests {
 
     #[test]
     fn test_decoding_left_padded() {
-        let parity_rlp_encoded = parity_rlp::encode(&0_u64);
-        assert_eq!(decode::<U8>(&parity_rlp_encoded).unwrap().0, 0);
-
         // eth_rlp.py: `encode_bytes_0`
         let left_padded_bytes_rlp_encoded = &[0x00];
         assert_eq!(
-            // `encode_left_padded_bytes`
             decode::<U8>(left_padded_bytes_rlp_encoded).unwrap_err(),
-            Error::UintDecodingFoundLeftPadding
+            crate::Error::UintDecodingFoundLeftPadding
         );
     }
 
@@ -108,7 +97,7 @@ mod tests {
         assert_eq!(
             // `encode_left_padded_bytes`
             decode::<U8>(encoded).unwrap_err(),
-            Error::ItemPayloadByteLengthTooLarge
+            crate::Error::ItemPayloadByteLengthTooLarge
         );
     }
 }

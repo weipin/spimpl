@@ -20,10 +20,17 @@ impl Record {
 
     /// Creates a `Record` from its textual form.
     pub fn from_textual_form<S: Scheme>(s: &str) -> Result<Self, Error> {
+        let encoded = RecordRlpEncoded::from_textual_form(s)?;
+        Record::from_rlp_encoded::<S>(&encoded)
+    }
+}
+
+impl RecordRlpEncoded {
+    /// Creates a `RecordRlpEncoded` from ENR textual form.
+    pub fn from_textual_form(s: &str) -> Result<Self, Error> {
         let base64 = s
             .strip_prefix(TEXTUAL_FORM_PREFIX)
             .ok_or(Error::DecodingFailedForInvalidInput)?;
-        let encoded = RecordRlpEncoded::from_base64(base64)?;
-        Record::from_rlp_encoded::<S>(&encoded)
+        RecordRlpEncoded::from_base64(base64)
     }
 }

@@ -9,22 +9,21 @@
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 use crate::content::Content;
-use crate::{Error, Record, Scheme, SequenceNumber};
+use crate::{Error, Record, Scheme, SchemeKeyPair, SequenceNumber};
 
 /// Builder for `Content`.
 pub struct Builder(pub(crate) Content);
 
 impl Builder {
-    /// Creates a new `Record` with the specified private key and public key.
+    /// Creates a new `Record` with the specified key pair.
     pub fn sign_and_build<S: Scheme>(
         &mut self,
-        private_key: &S::PrivateKey,
-        public_key: &S::PublicKey,
+        key_pair: &SchemeKeyPair<S>,
     ) -> Result<Record, Error> {
-        self.0.public_key_data = Some(S::public_key_to_bytes(public_key));
+        self.0.public_key_data = Some(S::public_key_to_bytes(key_pair.public_key()));
         let encoded = self.0.to_rlp_encoded::<S>();
         let signature = encoded
-            .sign::<S>(private_key)
+            .sign::<S>(key_pair.private_key())
             .map_err(|e| Error::SignatureConstructingFailed(format!("{e}")))?;
         let signature_data = S::signature_to_bytes(&signature);
 

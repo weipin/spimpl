@@ -57,7 +57,7 @@ pub fn decode_header_unchecked(
                 if data.len() == 1 {
                     return Err(Error::ItemDataWithInvalidByteLength);
                 }
-                // Encoding "single byte" as two is invalid.
+                // Single byte (in [0x00, 0x7f]) encoded as two is invalid.
                 // https://github.com/paritytech/parity-common/issues/49
                 if data[1] < 0x80 {
                     return Err(Error::ItemDataWithInvalidSingleByteEncoding);
@@ -78,7 +78,7 @@ pub fn decode_header_unchecked(
             let payload_byte_length = new_u64_from_be_bytes_with_left_padding(
                 &data[1..=byte_length_of_payload_byte_length as usize],
             );
-            // Encoding short string (0-55 bytes) as long is invalid.
+            // Short string (0-55 bytes) encoded as long is invalid.
             if payload_byte_length < 56 {
                 return Err(Error::ItemPayloadWithInvalidByteLengthLessThan56);
             }
@@ -110,7 +110,7 @@ pub fn decode_header_unchecked(
             let payload_byte_length = new_u64_from_be_bytes_with_left_padding(
                 &data[1..=byte_length_of_payload_byte_length as usize],
             );
-            // Encoding short list (0-55 bytes) as long is invalid.
+            // Short list (0-55 bytes) encoded as long is invalid.
             if payload_byte_length < 56 {
                 return Err(Error::ItemPayloadWithInvalidByteLengthLessThan56);
             }

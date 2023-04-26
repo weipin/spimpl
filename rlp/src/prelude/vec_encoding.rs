@@ -8,9 +8,9 @@
 
 use crate::{encode_to, Encode, ItemPayloadSlice};
 
-impl<'a, T> Encode for &'a [T]
+impl<T> Encode for &[T]
 where
-    &'a T: Encode,
+    for<'a> &'a T: Encode,
 {
     fn encode_to(self, output: &mut Vec<u8>) {
         let mut payload = vec![];
@@ -21,12 +21,12 @@ where
     }
 }
 
-impl<'a, T> Encode for &'a Vec<T>
+impl<T> Encode for &Vec<T>
 where
-    &'a T: Encode,
+    for<'a> &'a T: Encode,
 {
     fn encode_to(self, output: &mut Vec<u8>) {
-        <&'a [T] as Encode>::encode_to(self.as_slice(), output);
+        <&[T] as Encode>::encode_to(self.as_slice(), output);
     }
 }
 

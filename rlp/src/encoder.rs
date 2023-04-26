@@ -8,13 +8,13 @@
 
 use crate::Encode;
 
-/// Encodes 'value' and appends the result to `output`.
+/// Encodes `value` and appends the result to `output`.
 #[inline]
 pub fn encode_to<T: Encode>(value: T, output: &mut Vec<u8>) {
     <T as Encode>::encode_to(value, output);
 }
 
-/// Encodes 'value' and returns the result.
+/// Encodes `value` and returns the result.
 #[inline]
 pub fn encode<T: Encode>(value: T) -> Vec<u8> {
     let mut output = vec![];

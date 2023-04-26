@@ -49,12 +49,24 @@ def encode_bytes_1_2_3():
     return rlp.encode(bytes([1, 2, 3]))
 
 
+def encode_bytes_1_2_3_4_5_6_7_8():
+    return rlp.encode(bytes([1, 2, 3, 4, 5, 6, 7, 8]))
+
+
+def encode_bytes_1_2_3_4_5_6_7_8_9():
+    return rlp.encode(bytes([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+
+
 def encode_bytes_127_0_0_1():
     return rlp.encode(bytes([127, 0, 0, 1]))
 
 
 def encode_bytes_127_0_0_1_1():
     return rlp.encode(bytes([127, 0, 0, 1, 1]))
+
+
+def encode_bytes_33():
+    return rlp.encode(bytes([127] * 33))
 
 
 # 0:0:0:0:0:ffff:c00a:0x2ff

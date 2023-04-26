@@ -7,36 +7,36 @@
 #[allow(missing_docs)]
 #[derive(thiserror::Error, Debug, PartialEq)]
 pub enum Error {
-    #[error("RLP decoding failed")]
+    #[error("rlp decoding failed")]
     RLPDecodingError(#[source] rlp::Error),
-    #[error("The name of the identity scheme isn't recognized")]
+    #[error("identity scheme name not recognized")]
     SchemeNameNotRecognized,
-    #[error("Pairs aren't sorted by key or keys aren't unique")]
+    #[error("pairs aren't sorted by key or keys aren't unique")]
     KeysNotSortedOrNotUnique,
-    #[error("Found a key not followed by any value")]
+    #[error("found a key not followed by any value")]
     PairValueNotFound,
-    #[error("The sequence number is absent")]
+    #[error("sequence number absent")]
     SeqNotFound,
-    #[error("Byte length of the public key data doesn't match the scheme")]
+    #[error("byte length of public key data doesn't match scheme")]
     PublicKeyDataWithInvalidByteLength,
-    #[error("Bytes represent the public key is invalid")]
+    #[error("public key represented by invalid bytes")]
     InvalidPublicKeyData(String),
-    #[error("Byte length of the signature data doesn't match the scheme")]
+    #[error("byte length of signature data doesn't match scheme")]
     SignatureDataWithInvalidByteLength,
-    #[error("Bytes represent the signature is invalid")]
+    #[error("signature represented by invalid bytes")]
     InvalidSignatureData(String),
-    #[error("Signature verifying against a content failed")]
+    #[error("signature verifying against content failed")]
     SignatureVerifyingFailed(String),
-    #[error("Signature verifying failed for the content doesn't contain the public key data")]
+    #[error("signature verifying failed: content doesn't contain public key data")]
     SignatureVerifyingFailedForMissingPublicKey,
-    #[error("Signature constructing for a content failed")]
+    #[error("constructing signature for content failed")]
     SignatureConstructingFailed(String),
-    #[error("The content signature is invalid")]
+    #[error("invalid content signature")]
     InvalidSignature,
-    #[error("The encoded size of a node record exceeded the maximum")]
+    #[error("encoded size of node record exceeded maximum")]
     MaximumRecordRlpEncodedByteLengthExceeded,
-    #[error("Decoding failed for invalid input")]
+    #[error("decoding failed for invalid input")]
     DecodingFailedForInvalidInput,
-    #[error("Incrementing a sequence number overflowed")]
+    #[error("incrementing sequence number overflowed")]
     SeqOverflow,
 }

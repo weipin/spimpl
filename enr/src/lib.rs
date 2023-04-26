@@ -21,6 +21,7 @@ pub mod predefined_keys;
 mod publishable_record;
 mod record;
 mod scheme;
+mod scheme_keypair;
 mod scheme_v4;
 #[cfg(feature = "k256")]
 mod scheme_v4_k256;
@@ -31,10 +32,12 @@ mod types;
 
 pub use crate::base64::base64_engine;
 pub use builder::Builder;
+pub use constants::MAX_RLP_ENCODED_BYTE_LENGTH;
 pub use error::Error;
 pub use publishable_record::PublishableRecord;
 pub use record::{Record, RecordRlpEncoded};
 pub use scheme::Scheme;
+pub use scheme_keypair::SchemeKeyPair;
 pub use scheme_v4::Schemev4;
 #[cfg(feature = "k256")]
 pub use scheme_v4_k256::Schemev4K256;

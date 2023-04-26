@@ -9,26 +9,26 @@
 /// Errors which can occur when performing RLP encoding and decoding.
 #[derive(thiserror::Error, Debug, PartialEq)]
 pub enum Error {
-    #[error("The byte length of the item data doesn't match the header info")]
+    #[error("byte length of item data doesn't match header info")]
     ItemDataWithInvalidByteLength,
-    #[error("The data is invalid, the single byte isn't its own RLP encoding")]
+    #[error("invalid item data: single byte isn't its own RLP encoding")]
     ItemDataWithInvalidSingleByteEncoding,
-    #[error("The byte length of the payload is invalid, the value is less than 56")]
+    #[error("invalid payload byte length: value less than 56")]
     ItemPayloadWithInvalidByteLengthLessThan56,
-    #[error("The decoding data is empty")]
+    #[error("empty decoding data")]
     EmptyData,
-    #[error("The type of the decoding item is unexpected")]
+    #[error("unexpected decoding item type")]
     ItemTypeDoesNotMatch,
 
     // prelude
-    #[error("The byte length of the item payload exceeds the capacity of the decoding type")]
+    #[error("byte length of item payload exceeds decoding type capacity")]
     ItemPayloadByteLengthTooLarge,
-    #[error("The decoding unsigned integer is represented with left padding")]
+    #[error("decoding unsigned integer found left padding")]
     UintDecodingFoundLeftPadding,
-    #[error("The list iter returned None")]
+    #[error("list iter returned None")]
     ListDecodingIterationEnded,
-    #[error("The number of the item list doesn't match the decoding type")]
+    #[error("item list number doesn't match decoding type")]
     ListDecodingNumberDoesNotMatch,
-    #[error("Cannot create a new decoding type from the byte representation")]
+    #[error("cannot create a new value from its byte representation")]
     InvalidByteRepresentaion,
 }

@@ -11,7 +11,9 @@ mod tests {
     use hex_literal::hex;
 
     use crate::constants::SEQUENCE_NUMBER_INITIAL;
-    use crate::{Builder, Error, Record, Scheme, Schemev4, Schemev4Secp256k1, SequenceNumber};
+    use crate::{
+        Builder, Error, Record, Scheme, SchemeKeyPair, Schemev4, Schemev4Secp256k1, SequenceNumber,
+    };
 
     // eth_enr: `example_record`
     const EXAMPLE_RECORD_ADDRESS_WITH_EXTRA_ENTROPY: &str = "enr:-IS4QLJYdRwxdy-AbzWC6wL9ooB6O6uvCvJsJ36rbJztiAs1JzPY0__YkgFzZwNUuNhm1BDN6c4-UVRCJP9bXNCmoDYBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8";
@@ -111,7 +113,7 @@ mod tests {
         ];
 
         let private_key = S::new_private_key_from_bytes(&PRIVATE_KEY_DATA).unwrap();
-        let public_key = S::new_public_key_from_private_key(&private_key);
+        let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
 
         for (test_name, test_from_address_only, content_data, address) in test_data {
             if !test_from_address_only {
@@ -135,9 +137,7 @@ mod tests {
                 if let Some(udp6) = content_data.udp6 {
                     builder.with_udp6(udp6);
                 }
-                let record = builder
-                    .sign_and_build::<S>(&private_key, &public_key)
-                    .unwrap();
+                let record = builder.sign_and_build::<S>(&scheme_keypair).unwrap();
                 let record_address = record.to_textual_form::<S>().unwrap();
                 assert_eq!(record_address, address, "{test_name}");
             }
@@ -167,12 +167,12 @@ mod tests {
     #[test]
     fn test_publishable() {
         let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
-        let public_key = Schemev4::new_public_key_from_private_key(&private_key);
+        let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
         let mut publishable_record = Builder::new::<Schemev4>()
             .with_seq(1)
             .with_ip4(EXAMPLE_IP4)
             .with_udp4(EXAMPLE_UDP4)
-            .sign_and_build::<Schemev4>(&private_key, &public_key)
+            .sign_and_build::<Schemev4>(&scheme_keypair)
             .unwrap()
             .to_publishable::<Schemev4>();
 
@@ -210,10 +210,10 @@ mod tests {
     #[test]
     fn test_publishable_seq_overflow() {
         let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
-        let public_key = Schemev4::new_public_key_from_private_key(&private_key);
+        let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
         let mut publishable_record = Builder::new::<Schemev4>()
             .with_seq(SequenceNumber::MAX)
-            .sign_and_build::<Schemev4>(&private_key, &public_key)
+            .sign_and_build::<Schemev4>(&scheme_keypair)
             .unwrap()
             .to_publishable::<Schemev4>();
 

@@ -8,14 +8,16 @@
 
 use base64::Engine;
 
-use crate::constants::{MAXIMUM_BASE64_ENCODED_BYTE_LENGTH, MAXIMUM_RLP_ENCODED_BYTE_LENGTH};
+use crate::constants::{MAX_BASE64_ENCODED_BYTE_LENGTH, MAX_RLP_ENCODED_BYTE_LENGTH};
 use crate::{Error, RecordRlpEncoded};
 
 impl RecordRlpEncoded {
     /// Encodes a `RecordRlpEncoded` to its base64 from.
     pub(crate) fn to_base64(&self) -> Vec<u8> {
-        let mut output = vec![0; MAXIMUM_BASE64_ENCODED_BYTE_LENGTH];
-        let size = base64_engine().encode_slice(&self.0, &mut output).unwrap();
+        let mut output = vec![0; MAX_BASE64_ENCODED_BYTE_LENGTH];
+        let size = base64_engine()
+            .encode_slice(self.rlp_encoded(), &mut output)
+            .unwrap();
         output.truncate(size);
 
         output
@@ -23,20 +25,20 @@ impl RecordRlpEncoded {
 
     /// Creates a `RecordRlpEncoded` from its base64 form `s`.
     pub(crate) fn from_base64(s: &str) -> Result<Self, Error> {
-        if s.len() > MAXIMUM_BASE64_ENCODED_BYTE_LENGTH {
+        if s.len() > MAX_BASE64_ENCODED_BYTE_LENGTH {
             return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
         }
 
-        let mut output = vec![0; MAXIMUM_RLP_ENCODED_BYTE_LENGTH];
+        let mut output = vec![0; MAX_RLP_ENCODED_BYTE_LENGTH];
         let size = base64_engine()
             .decode_slice(s, &mut output)
             .map_err(|_| Error::DecodingFailedForInvalidInput)?;
-        if size > MAXIMUM_RLP_ENCODED_BYTE_LENGTH {
+        if size > MAX_RLP_ENCODED_BYTE_LENGTH {
             return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
         }
         output.truncate(size);
 
-        Ok(Self(output))
+        Ok(Self::from_vec(output))
     }
 }
 

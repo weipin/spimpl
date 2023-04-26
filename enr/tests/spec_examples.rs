@@ -8,7 +8,7 @@ use std::net::Ipv4Addr;
 
 use hex_literal::hex;
 
-use enr::{Builder, Record, Scheme, Schemev4};
+use enr::{Builder, Record, Scheme, SchemeKeyPair, Schemev4};
 
 const EXAMPLE_RECORD_ADDRESS: &str = "enr:-IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8";
 // eth_enr_v4.py: `example_record`
@@ -21,12 +21,12 @@ const EXAMPLE_UDP4: u16 = 30303;
 #[test]
 fn build_immutable_example_record() {
     let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
-    let public_key = Schemev4::new_public_key_from_private_key(&private_key);
+    let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
     let record = Builder::new::<Schemev4>()
         .with_seq(1)
         .with_ip4(EXAMPLE_IP4)
         .with_udp4(EXAMPLE_UDP4)
-        .sign_and_build::<Schemev4>(&private_key, &public_key)
+        .sign_and_build::<Schemev4>(&scheme_keypair)
         .unwrap();
 
     let record_address = record.to_textual_form::<Schemev4>().unwrap();
@@ -56,12 +56,12 @@ fn create_records_from_textual_form() {
 #[test]
 fn test_publishable_record() {
     let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
-    let public_key = Schemev4::new_public_key_from_private_key(&private_key);
+    let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
     let mut publishable_record = Builder::new::<Schemev4>()
         .with_seq(1)
         .with_ip4(EXAMPLE_IP4)
         .with_udp4(EXAMPLE_UDP4)
-        .sign_and_build::<Schemev4>(&private_key, &public_key)
+        .sign_and_build::<Schemev4>(&scheme_keypair)
         .unwrap()
         .to_publishable::<Schemev4>();
 

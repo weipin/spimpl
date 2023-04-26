@@ -147,9 +147,9 @@ fn test_nested_list_roundtrip() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct Nest<T>(Vec<T>);
 
-    impl<'a, T> Encode for &'a Nest<T>
+    impl<T> Encode for &Nest<T>
     where
-        &'a T: Encode,
+        for<'a> &'a T: Encode,
     {
         fn encode_to(self, output: &mut Vec<u8>) {
             encode_to(&self.0, output);

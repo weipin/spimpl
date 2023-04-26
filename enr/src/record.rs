@@ -10,7 +10,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 
 use rlp::{ItemDataSlice, ItemPayloadSlice};
 
-use crate::constants::MAXIMUM_RLP_ENCODED_BYTE_LENGTH;
+use crate::constants::MAX_RLP_ENCODED_BYTE_LENGTH;
 use crate::content::{Content, ContentRlpEncoded};
 use crate::{Error, Scheme, SequenceNumber};
 
@@ -24,7 +24,32 @@ pub struct Record {
 }
 
 /// Represents the RLP encoded form of a `Record`.
-pub struct RecordRlpEncoded(pub Vec<u8>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecordRlpEncoded(Vec<u8>);
+
+// Rlp-encoded as it is.
+impl rlp::Encode for &RecordRlpEncoded {
+    fn encode_to(self, output: &mut Vec<u8>) {
+        output.extend(&self.0);
+    }
+}
+
+impl RecordRlpEncoded {
+    /// Creates a `RecordRlpEncoded` from a byte vector.
+    ///
+    /// Will panic if the byte length of the vector is greater than
+    /// `MAX_RLP_ENCODED_BYTE_LENGTH`.
+    pub fn from_vec(vec: Vec<u8>) -> Self {
+        assert!(vec.len() <= MAX_RLP_ENCODED_BYTE_LENGTH);
+
+        RecordRlpEncoded(vec)
+    }
+
+    /// Returns a reference to the RLP-encoded record.
+    pub fn rlp_encoded(&self) -> &Vec<u8> {
+        &self.0
+    }
+}
 
 impl Record {
     /// Encodes a `Record` to its RLP encoded form.
@@ -36,7 +61,7 @@ impl Record {
 
         let mut encoded = vec![];
         ItemPayloadSlice(&list_payload).encode_as_list(&mut encoded);
-        if encoded.len() > MAXIMUM_RLP_ENCODED_BYTE_LENGTH {
+        if encoded.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
             return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
         }
 

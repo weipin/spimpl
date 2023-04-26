@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "discv5",
   "enr",
   "extensions",
   "rlp",
