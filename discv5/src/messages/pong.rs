@@ -18,7 +18,7 @@ pub struct Pong {
     pub recipient_port: u16,
 }
 
-impl Message for &Pong {
+impl Message for Pong {
     const TYPE: Type = Type::Pong;
 }
 
@@ -38,13 +38,14 @@ mod tests {
         let enr_seq = 7;
         let ip4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
         let ip6 = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0xffff, 0xc00a, 0x2ff));
+
+        // ipv4
         let pong = Pong {
             request_id: request_id.clone(),
             enr_seq,
             recipient_ip: ip4,
             recipient_port: u16::MAX,
         };
-
         let encoded = messages::encode(&pong);
         // discv5_messages: `pong_ipv4_ipv6`
         assert_eq!(encoded, hex!("02d288010203040506070807847f00000182ffff"));
@@ -62,7 +63,6 @@ mod tests {
             encoded,
             hex!("02de880102030405060708079000000000000000000000ffffc00a02ff82ffff")
         );
-
         assert_eq!(rlp::decode::<Pong>(&encoded[1..]).unwrap(), pong);
     }
 }

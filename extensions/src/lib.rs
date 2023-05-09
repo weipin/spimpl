@@ -10,6 +10,7 @@
 
 mod bytes;
 mod int;
+mod vec;
 
 pub use bytes::strip_left_padding;
 pub use int::uint_from_bytes::*;

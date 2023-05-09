@@ -16,8 +16,8 @@ impl<'a> Decode<'a> for Vec<u8> {
     }
 }
 
-impl Encode for &Vec<u8> {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for Vec<u8> {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self.as_slice()).encode_as_single_value(output);
     }
 }

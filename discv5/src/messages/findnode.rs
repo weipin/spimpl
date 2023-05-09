@@ -14,7 +14,7 @@ pub struct FindNode {
     pub distances: Vec<Log2Distance>,
 }
 
-impl Message for &FindNode {
+impl Message for FindNode {
     const TYPE: Type = Type::FindNode;
 }
 

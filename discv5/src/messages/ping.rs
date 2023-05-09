@@ -14,7 +14,7 @@ pub struct Ping {
     pub enr_seq: enr::SequenceNumber,
 }
 
-impl Message for &Ping {
+impl Message for Ping {
     const TYPE: Type = Type::Ping;
 }
 

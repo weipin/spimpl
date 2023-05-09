@@ -5,7 +5,9 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 mod distance;
+mod nonce;
 mod request_id;
 
 pub use distance::{Distance, Log2Distance};
+pub use nonce::Nonce;
 pub use request_id::RequestId;

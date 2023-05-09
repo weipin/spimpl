@@ -27,7 +27,7 @@ use super::uint::{impl_decode_for_uint, impl_encode_for_uint};
 /// use rlp::{decode, encode, U8};
 ///
 /// // Encodes and decodes a `u8` as a single value.
-/// let encoded = encode(U8(123));
+/// let encoded = encode(&U8(123));
 /// assert_eq!(encoded, &[0x7b]);
 ///
 /// let decoded: U8 = decode(&encoded).unwrap();
@@ -68,13 +68,13 @@ mod tests {
     fn test_u8(n: u8) -> bool {
         let parity_rlp_encoded = parity_rlp::encode(&n);
 
-        let output = encode(U8(n));
+        let output = encode(&U8(n));
         output == parity_rlp_encoded && decode::<U8>(&output).unwrap() == U8(n)
     }
 
     #[test]
     fn test_encode_zero() {
-        let output = encode(U8(0));
+        let output = encode(&U8(0));
         // eth_rlp.py: `encode_uint_0`
         assert_eq!(output, &[0x80]);
     }

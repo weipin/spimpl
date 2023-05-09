@@ -8,7 +8,7 @@
 #[derive(thiserror::Error, Debug, PartialEq)]
 pub enum Error {
     #[error("rlp decoding failed")]
-    RLPDecodingError(#[source] rlp::Error),
+    RlpDecodingError(#[source] rlp::Error),
     #[error("identity scheme name not recognized")]
     SchemeNameNotRecognized,
     #[error("pairs aren't sorted by key or keys aren't unique")]

@@ -15,7 +15,7 @@ pub struct TalkReq {
     pub request: Vec<u8>,
 }
 
-impl Message for &TalkReq {
+impl Message for TalkReq {
     const TYPE: Type = Type::TalkReq;
 }
 

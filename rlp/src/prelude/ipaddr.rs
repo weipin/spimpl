@@ -20,11 +20,11 @@ impl Decode<'_> for IpAddr {
     }
 }
 
-impl Encode for &IpAddr {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for IpAddr {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         match self {
-            IpAddr::V4(ip) => <&Ipv4Addr as Encode>::encode_to(ip, output),
-            IpAddr::V6(ip) => <&Ipv6Addr as Encode>::encode_to(ip, output),
+            IpAddr::V4(ip) => <Ipv4Addr as Encode>::encode_to(ip, output),
+            IpAddr::V6(ip) => <Ipv6Addr as Encode>::encode_to(ip, output),
         }
     }
 }

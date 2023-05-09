@@ -20,8 +20,8 @@ impl Decode<'_> for Ipv6Addr {
     }
 }
 
-impl Encode for &Ipv6Addr {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for Ipv6Addr {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         ItemPayloadSlice(&self.octets()).encode_as_single_value(output);
     }
 }

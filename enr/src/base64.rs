@@ -16,7 +16,7 @@ impl RecordRlpEncoded {
     pub(crate) fn to_base64(&self) -> Vec<u8> {
         let mut output = vec![0; MAX_BASE64_ENCODED_BYTE_LENGTH];
         let size = base64_engine()
-            .encode_slice(self.rlp_encoded(), &mut output)
+            .encode_slice(self.bytes(), &mut output)
             .unwrap();
         output.truncate(size);
 
@@ -38,7 +38,7 @@ impl RecordRlpEncoded {
         }
         output.truncate(size);
 
-        Ok(Self::from_vec(output))
+        Self::from_vec(output)
     }
 }
 

@@ -12,7 +12,6 @@ use super::uint::{impl_decode_for_uint, impl_encode_for_uint};
 
 impl_decode_for_uint!(U256, U256::ZERO, new_u256_from_be_bytes_with_left_padding);
 impl_encode_for_uint!(U256);
-impl_encode_for_uint!(&U256);
 
 #[inline]
 fn new_u256_from_be_bytes_with_left_padding(bytes: &[u8]) -> U256 {
@@ -38,13 +37,13 @@ mod tests {
             0x10111213_14151617_18191a1b_1c1d1e1f,
         );
 
-        let output = encode(n);
+        let output = encode(&n);
         assert_eq!(decode::<U256>(&output).unwrap(), n);
     }
 
     #[test]
     fn test_encode_zero() {
-        let output = encode(U256::ZERO);
+        let output = encode(&U256::ZERO);
         // eth_rlp.py: `encode_uint_0`
         assert_eq!(output, &[0x80]);
     }

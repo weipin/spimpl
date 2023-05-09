@@ -12,8 +12,8 @@ use rlp::{decode, encode, encode_to, Decode, Encode, Error, ItemPayloadSlice, It
 #[derive(Debug, PartialEq)]
 struct Signature<'a>(&'a [u8]);
 
-impl Encode for &Signature<'_> {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for Signature<'_> {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         encode_to(&self.0, output);
     }
 }

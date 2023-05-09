@@ -24,7 +24,7 @@ impl Content {
             if e == rlp::Error::ListDecodingIterationEnded {
                 Error::SeqNotFound
             } else {
-                Error::RLPDecodingError(e)
+                Error::RlpDecodingError(e)
             }
         })?;
 
@@ -39,7 +39,7 @@ impl Content {
                     if err == rlp::Error::ListDecodingIterationEnded {
                         break;
                     }
-                    return Err(Error::RLPDecodingError(err));
+                    return Err(Error::RlpDecodingError(err));
                 }
             };
 
@@ -87,7 +87,7 @@ impl Content {
                 _ => match iter.next() {
                     None => return Err(Error::PairValueNotFound),
                     Some(Ok(_)) => continue,
-                    Some(Err(e)) => return Err(Error::RLPDecodingError(e)),
+                    Some(Err(e)) => return Err(Error::RlpDecodingError(e)),
                 },
             }
         }
@@ -106,5 +106,5 @@ fn pair_value_error(rlp_err: rlp::Error) -> Error {
     if rlp_err == rlp::Error::ListDecodingIterationEnded {
         return Error::PairValueNotFound;
     }
-    Error::RLPDecodingError(rlp_err)
+    Error::RlpDecodingError(rlp_err)
 }

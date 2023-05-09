@@ -24,7 +24,7 @@ fn the_list_cat_dog() {
     let data: &[&[u8]] = &[b"cat", b"dog"];
     let encoded = &[0xc8, 0x83, b'c', b'a', b't', 0x83, b'd', b'o', b'g'];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let v: Vec<&[u8]> = decode(&output).unwrap();
@@ -48,7 +48,7 @@ fn the_empty_list() {
     let data: &[&[u8]] = &[];
     let encoded = &[0xc0];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let v: Vec<&[u8]> = decode(&output).unwrap();
@@ -60,7 +60,7 @@ fn the_integer_0() {
     let data = U8(0);
     let encoded = &[0x80];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let n: U8 = decode(&output).unwrap();
@@ -72,7 +72,7 @@ fn the_encoded_integer_0() {
     let data: &[u8] = &[0x00];
     let encoded = &[0x00];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let s: &[u8] = decode(&output).unwrap();
@@ -84,7 +84,7 @@ fn the_encoded_integer_15() {
     let data: &[u8] = &[0x0f];
     let encoded = &[0x0f];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let s: &[u8] = decode(&output).unwrap();
@@ -96,7 +96,7 @@ fn the_encoded_integer_1024() {
     let data: &[u8] = &[0x04, 0x00];
     let encoded = &[0x82, 0x04, 0x00];
 
-    let output = encode(data);
+    let output = encode(&data);
     assert_eq!(output, encoded);
 
     let s: &[u8] = decode(&output).unwrap();
@@ -134,9 +134,9 @@ fn the_string_lorem() {
 #[derive(Clone, Debug, PartialEq)]
 struct MyVec(Vec<MyVec>);
 
-impl Encode for &MyVec {
-    fn encode_to(self, output: &mut Vec<u8>) {
-        <&[MyVec] as Encode>::encode_to(self.0.as_slice(), output);
+impl Encode for MyVec {
+    fn encode_to(&self, output: &mut Vec<u8>) {
+        <&[MyVec] as Encode>::encode_to(&self.0.as_slice(), output);
     }
 }
 

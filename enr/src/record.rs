@@ -27,26 +27,37 @@ pub struct Record {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordRlpEncoded(Vec<u8>);
 
-// Rlp-encoded as it is.
-impl rlp::Encode for &RecordRlpEncoded {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl rlp::Encode for RecordRlpEncoded {
+    // Encodes as it is.
+    fn encode_to(&self, output: &mut Vec<u8>) {
         output.extend(&self.0);
+    }
+}
+
+impl<'a> rlp::Decode<'a> for RecordRlpEncoded {
+    const TYPE: rlp::ItemType = rlp::ItemType::SingleValue;
+
+    fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, rlp::Error> {
+        // Decodes as it is.
+        if payload.0.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
+            return Err(rlp::Error::ItemPayloadByteLengthTooLarge);
+        }
+        Ok(RecordRlpEncoded::from_vec(payload.0.to_vec()).unwrap())
     }
 }
 
 impl RecordRlpEncoded {
     /// Creates a `RecordRlpEncoded` from a byte vector.
-    ///
-    /// Will panic if the byte length of the vector is greater than
-    /// `MAX_RLP_ENCODED_BYTE_LENGTH`.
-    pub fn from_vec(vec: Vec<u8>) -> Self {
-        assert!(vec.len() <= MAX_RLP_ENCODED_BYTE_LENGTH);
+    pub fn from_vec(vec: Vec<u8>) -> Result<Self, Error> {
+        if vec.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
+            return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
+        }
 
-        RecordRlpEncoded(vec)
+        Ok(RecordRlpEncoded(vec))
     }
 
     /// Returns a reference to the RLP-encoded record.
-    pub fn rlp_encoded(&self) -> &Vec<u8> {
+    pub fn bytes(&self) -> &[u8] {
         &self.0
     }
 }
@@ -72,8 +83,8 @@ impl Record {
     pub fn from_rlp_encoded<S: Scheme>(record_encoded: &RecordRlpEncoded) -> Result<Self, Error> {
         let mut list_iter = ItemDataSlice(record_encoded.0.as_slice())
             .list_iter()
-            .map_err(Error::RLPDecodingError)?;
-        let signature_data: Vec<u8> = list_iter.next_item().map_err(Error::RLPDecodingError)?;
+            .map_err(Error::RlpDecodingError)?;
+        let signature_data: Vec<u8> = list_iter.next_item().map_err(Error::RlpDecodingError)?;
         if signature_data.len() != S::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH {
             return Err(Error::SignatureDataWithInvalidByteLength);
         }

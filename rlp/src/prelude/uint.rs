@@ -45,7 +45,7 @@ impl_decode_for_uint!(u64, 0, new_u64_from_be_bytes_with_left_padding);
 macro_rules! impl_encode_for_uint {
     ($t:ty) => {
         impl crate::Encode for $t {
-            fn encode_to(self, output: &mut Vec<u8>) {
+            fn encode_to(&self, output: &mut Vec<u8>) {
                 crate::ItemPayloadSlice(extensions::strip_left_padding(&self.to_be_bytes()))
                     .encode_as_single_value(output);
             }
@@ -60,10 +60,6 @@ impl_encode_for_uint!(u16);
 impl_encode_for_uint!(u32);
 impl_encode_for_uint!(u64);
 
-impl_encode_for_uint!(&u16);
-impl_encode_for_uint!(&u32);
-impl_encode_for_uint!(&u64);
-
 #[cfg(test)]
 mod tests {
     use ::quickcheck_macros::quickcheck;
@@ -77,7 +73,7 @@ mod tests {
             fn $test_name(n: $t) -> bool {
                 let parity_rlp_encoded = parity_rlp::encode(&n);
 
-                let output = encode(n);
+                let output = encode(&n);
                 output == parity_rlp_encoded && decode::<$t>(&output).unwrap() == n
             }
         };

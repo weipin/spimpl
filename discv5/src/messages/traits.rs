@@ -6,6 +6,6 @@
 
 use super::Type;
 
-pub trait Message {
+pub trait Message: rlp::Encode + for<'a> rlp::Decode<'a> {
     const TYPE: Type;
 }

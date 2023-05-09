@@ -14,7 +14,7 @@ pub struct TalkResp {
     pub response: Vec<u8>,
 }
 
-impl Message for &TalkResp {
+impl Message for TalkResp {
     const TYPE: Type = Type::TalkResp;
 }
 

@@ -28,9 +28,8 @@ pub fn derive_encode(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 
     let expanded = quote! {
         // The generated impl.
-        impl #impl_generics rlp::Encode for &#name #ty_generics #where_clause {
-            #[allow(clippy::needless_borrow)]
-            fn encode_to(self, output: &mut Vec<u8>) {
+        impl #impl_generics rlp::Encode for #name #ty_generics #where_clause {
+            fn encode_to(&self, output: &mut Vec<u8>) {
                 #encoding
             }
         }

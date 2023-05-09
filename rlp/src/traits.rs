@@ -12,8 +12,8 @@ use crate::{Error, ItemPayloadSlice, ItemType};
 
 /// Trait for RLP encoding.
 pub trait Encode {
-    /// Encodes `self` and appends the result to `output`.
-    fn encode_to(self, output: &mut Vec<u8>);
+    /// Encodes `&self` and appends the result to `output`.
+    fn encode_to(&self, output: &mut Vec<u8>);
 }
 
 /// Trait for RLP decoding.

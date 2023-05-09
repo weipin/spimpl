@@ -119,11 +119,11 @@ fn test_nested_list_roundtrip() {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct Inner(u64, u64);
 
-    impl Encode for &Inner {
-        fn encode_to(self, output: &mut Vec<u8>) {
+    impl Encode for Inner {
+        fn encode_to(&self, output: &mut Vec<u8>) {
             let mut payload = vec![];
-            encode_to(self.0, &mut payload);
-            encode_to(self.1, &mut payload);
+            encode_to(&self.0, &mut payload);
+            encode_to(&self.1, &mut payload);
 
             ItemPayloadSlice(&payload).encode_as_list(output);
         }
@@ -147,11 +147,8 @@ fn test_nested_list_roundtrip() {
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct Nest<T>(Vec<T>);
 
-    impl<T> Encode for &Nest<T>
-    where
-        for<'a> &'a T: Encode,
-    {
-        fn encode_to(self, output: &mut Vec<u8>) {
+    impl<T: Encode> Encode for Nest<T> {
+        fn encode_to(&self, output: &mut Vec<u8>) {
             encode_to(&self.0, output);
         }
     }

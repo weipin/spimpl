@@ -40,6 +40,20 @@ def minimal_record():
     return _node_address([1, 'id', 'v4', 'secp256k1', PUBLIC_KEY_DATA])
 
 
+def discv5_example_record_without_extra_entropy():
+    key_n = 0xeef77acb6c6a6eebc5b363a475ac583ec7eccdb42b6481424c60f59aa326547f
+    key = SigningKey.from_secret_exponent(key_n, curve=SECP256k1)
+    pubkey_data = bytes.fromhex('0313d14211e0287b2361a1615890a9b5212080546d0a257ae4cff96cf534992cb9')
+
+    content_items = [1, 'id', 'v4', 'ip', IP4, 'secp256k1', pubkey_data];
+    content_rlp_encoded = encode(content_items)
+    h = keccak(content_rlp_encoded)
+    content_signature = key.sign_digest_deterministic(h, hashfunc=sha256, sigencode=sigencode_string_canonize)
+
+    record_rlp_items = [content_signature] + content_items
+    return encode(record_rlp_items)
+
+
 def example_record_mixed_with_unknown_pairs_address():
     return _node_address(
         [1, 'a_', 'xxx', 'id', 'v4', 'ie_', 'xxx', 'ip', IP4, 'iz_', 'xxx', 'secp256k1',

@@ -11,7 +11,7 @@ use rlp::encode;
 fn encode_bench(c: &mut Criterion) {
     c.bench_function("encode_u64", |b| {
         b.iter(|| {
-            encode(0x1023_4567_89ab_cdefu64);
+            encode(&0x1023_4567_89ab_cdefu64);
         })
     });
 
@@ -19,7 +19,7 @@ fn encode_bench(c: &mut Criterion) {
         let data: Vec<u64> = (0u64..1000).collect();
 
         b.iter(|| {
-            encode(data.as_slice());
+            encode(&data.as_slice());
         })
     });
 

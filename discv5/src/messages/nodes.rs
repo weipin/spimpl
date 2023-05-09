@@ -10,14 +10,14 @@ use crate::types::RequestId;
 
 use super::{Message, Type};
 
-#[derive(rlp::Encode, Debug, PartialEq)]
+#[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
 pub struct Nodes {
     pub request_id: RequestId,
     pub total: u64,
     pub rlp_encoded_records: Vec<RecordRlpEncoded>,
 }
 
-impl Message for &Nodes {
+impl Message for Nodes {
     const TYPE: Type = Type::Nodes;
 }
 

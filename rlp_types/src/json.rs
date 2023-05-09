@@ -73,7 +73,7 @@ pub fn encode_json_value_to_rlp(value: &Value) -> Vec<u8> {
     match value {
         Value::Number(number) => {
             let n = number.as_u64().unwrap();
-            encode_to(n, &mut output);
+            encode_to(&n, &mut output);
         }
         Value::String(string) => {
             let bytes = string.as_bytes();
@@ -83,7 +83,7 @@ pub fn encode_json_value_to_rlp(value: &Value) -> Vec<u8> {
             } else {
                 bytes.into()
             };
-            encode_to(bytes.as_ref(), &mut output);
+            encode_to(&bytes.as_ref(), &mut output);
         }
         Value::Array(array) => {
             let mut payload = vec![];

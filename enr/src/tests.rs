@@ -254,12 +254,12 @@ mod tests {
             ),
             (
                 "ip4_overflow",
-                Error::RLPDecodingError(rlp::Error::InvalidByteRepresentaion),
+                Error::RlpDecodingError(rlp::Error::InvalidByteRepresentaion),
                 "enr:-FK4QDVBPT0_ui83m7L8tu--KWyFNGke-WR8wQnCzpx5ZPzYMAtwzsObWMP_VZobiy-hdC8XPtB9QJs3QDWpeNXfM-wBgmlkgnY0gmlwhX8AAAAB"
             ),
             (
                 "udp_overflow",
-                Error::RLPDecodingError(rlp::Error::ItemPayloadByteLengthTooLarge),
+                Error::RlpDecodingError(rlp::Error::ItemPayloadByteLengthTooLarge),
                 "enr:-FG4QJOYbH3CV8ZzZDYFqZzFR5yqvTnVc4lVOdpcSgFhWFr-UHMp9VN1tXwtLVhWbPZ2U2eeCJp1-GZZoTSyFWKvXUIBgmlkgnY0g3VkcIMBAAA"
             ),
             (
@@ -279,7 +279,7 @@ mod tests {
             ),
             (
                 "invalid_address_1",
-                Error::RLPDecodingError(rlp::Error::ItemDataWithInvalidByteLength),
+                Error::RlpDecodingError(rlp::Error::ItemDataWithInvalidByteLength),
                 "enr:xxxx"
             ),
             (

@@ -14,8 +14,8 @@ use rlp::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 #[derive(Debug, PartialEq)]
 pub struct RlpBigUint(pub BigUint);
 
-impl Encode for &RlpBigUint {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for RlpBigUint {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         ItemPayloadSlice(strip_left_padding(&self.0.to_bytes_be())).encode_as_single_value(output);
     }
 }

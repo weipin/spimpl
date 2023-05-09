@@ -26,11 +26,11 @@ impl Content {
     /// Encodes `self` to its RLP encoded form and appends the result to
     /// `list_payload`.
     pub(crate) fn encode_to_rlp_list_payload<S: Scheme>(&self, list_payload: &mut Vec<u8>) {
-        encode_to(self.seq, list_payload);
+        encode_to(&self.seq, list_payload);
 
         // The key/value pairs must be sorted by key.
         let mut pairs = vec![];
-        pairs.push((ID_KEY, encode(self.id)));
+        pairs.push((ID_KEY, encode(&self.id)));
         if let Some(ref ip4) = self.ip4 {
             pairs.push((IP4_KEY, encode(ip4)));
         }
@@ -41,21 +41,21 @@ impl Content {
             pairs.push((S::key_of_public_key(), encode(public_key_bytes)));
         }
         if let Some(tcp4) = self.tcp4 {
-            pairs.push((TCP4_KEY, encode(tcp4)));
+            pairs.push((TCP4_KEY, encode(&tcp4)));
         }
         if let Some(tcp6) = self.tcp6 {
-            pairs.push((TCP6_KEY, encode(tcp6)));
+            pairs.push((TCP6_KEY, encode(&tcp6)));
         }
         if let Some(udp4) = self.udp4 {
-            pairs.push((UDP4_KEY, encode(udp4)));
+            pairs.push((UDP4_KEY, encode(&udp4)));
         }
         if let Some(udp6) = self.udp6 {
-            pairs.push((UDP6_KEY, encode(udp6)));
+            pairs.push((UDP6_KEY, encode(&udp6)));
         }
 
         pairs.sort_by_key(|k| k.0);
         for (key, rlp_bytes) in pairs {
-            encode_to(key, list_payload);
+            encode_to(&key, list_payload);
             list_payload.extend(rlp_bytes);
         }
     }

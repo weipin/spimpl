@@ -20,8 +20,8 @@ impl<const N: usize> Decode<'_> for [u8; N] {
     }
 }
 
-impl<const N: usize> Encode for &[u8; N] {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl<const N: usize> Encode for [u8; N] {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         ItemPayloadSlice(self).encode_as_single_value(output);
     }
 }

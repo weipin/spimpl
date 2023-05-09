@@ -16,8 +16,8 @@ struct Entry<'a> {
     field2: Vec<u8>,
 }
 
-impl Encode for &Entry<'_> {
-    fn encode_to(self, output: &mut Vec<u8>) {
+impl Encode for Entry<'_> {
+    fn encode_to(&self, output: &mut Vec<u8>) {
         let mut payload = vec![];
         encode_to(&self.id, &mut payload);
         encode_to(&self.field1, &mut payload);
