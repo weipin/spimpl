@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::types::{ItemDataSlice, ItemPayloadSlice};
+use crate::types::{HeaderByteLength, ItemDataSlice, ItemPayloadSlice};
 use crate::{decode_header_unchecked, decode_payload, Decode, Error, ItemType};
 
 /// An iterator over the items of a RLP list.
@@ -44,6 +44,37 @@ impl<'a> Iterator for ListIter<'a> {
     type Item = Result<(ItemType, ItemPayloadSlice<'a>), Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        self.next_itemdata().map(|item| {
+            item.map(|(item_type, header_byte_length, item_data)| {
+                (
+                    item_type,
+                    ItemPayloadSlice(&item_data.0[header_byte_length as usize..]),
+                )
+            })
+        })
+    }
+}
+
+impl<'a> ListIter<'a> {
+    /// Advances the iterator and returns the next RLP item or error if decoding
+    /// fails.
+    ///
+    /// Returns `Err(Error::ListDecodingIterationEnded)` when iteration is
+    /// finished.
+    pub fn next_item<T: Decode<'a>>(&mut self) -> Result<T, Error> {
+        match self.next() {
+            None => Err(Error::ListDecodingIterationEnded),
+            Some(Ok((item_type, payload))) => decode_payload(item_type, payload),
+            Some(Err(e)) => Err(e),
+        }
+    }
+
+    /// Advances the iterator and returns the next item data pair.
+    ///
+    /// Returns None when iteration is finished.
+    pub fn next_itemdata(
+        &mut self,
+    ) -> Option<Result<(ItemType, HeaderByteLength, ItemDataSlice<'a>), Error>> {
         if self.remaining_list_payload.0.is_empty() {
             return None;
         }
@@ -63,27 +94,9 @@ impl<'a> Iterator for ListIter<'a> {
                     .0
                     .split_at(header_byte_length as usize + payload_byte_length as usize);
                 self.remaining_list_payload = ItemPayloadSlice(data2);
-                Some(Ok((
-                    item_type,
-                    ItemPayloadSlice(&data1[header_byte_length as usize..]),
-                )))
+                Some(Ok((item_type, header_byte_length, ItemDataSlice(data1))))
             }
             Err(e) => Some(Err(e)),
-        }
-    }
-}
-
-impl<'a> ListIter<'a> {
-    /// Advances the iterator and returns the next RLP item or error if decoding
-    /// fails.
-    ///
-    /// Returns `Err(Error::ListDecodingIterationEnded)` when iteration is
-    /// finished.
-    pub fn next_item<T: Decode<'a>>(&mut self) -> Result<T, Error> {
-        match self.next() {
-            None => Err(Error::ListDecodingIterationEnded),
-            Some(Ok((item_type, payload))) => decode_payload(item_type, payload),
-            Some(Err(e)) => Err(e),
         }
     }
 }
@@ -138,14 +151,9 @@ mod tests {
         ];
 
         for (err, payload) in test_data {
-            assert_eq!(
-                ItemPayloadSlice(payload)
-                    .list_iter_unchecked()
-                    .next()
-                    .unwrap()
-                    .unwrap_err(),
-                err
-            )
+            let mut list_iter = ItemPayloadSlice(payload).list_iter_unchecked();
+
+            assert_eq!(list_iter.next().unwrap().unwrap_err(), err);
         }
     }
 }

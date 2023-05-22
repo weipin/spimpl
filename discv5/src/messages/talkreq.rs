@@ -35,7 +35,7 @@ mod tests {
         };
 
         let encoded = messages::encode(&talkreq);
-        // discv5_messages: `talkreq_1`
+        // discv5_playground: `talkreq_1`
         assert_eq!(
             encoded,
             hex_literal::hex!("05d18801020304050607088301020383040506")

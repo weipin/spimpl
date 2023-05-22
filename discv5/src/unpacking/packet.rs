@@ -42,12 +42,14 @@ pub fn unpack<'a>(
     let mut static_header = masked_static_header_slice.to_vec();
     aesctr::apply_keystream(&mut cipher, static_header.as_mut_slice());
 
-    let (flag, nonce, auth_data_size) = unpack_static_header(&static_header)?;
+    let (flag, nonce, auth_data_size) =
+        unpack_static_header(&static_header.as_slice().try_into().unwrap())?;
 
     if remaining.len() < auth_data_size as usize {
         return Err(Error::InvalidAuthDataBytes);
     }
     let (auth_data_slice, message) = remaining.split_at(auth_data_size as usize);
+
     let mut auth_data = auth_data_slice.to_vec();
     aesctr::apply_keystream(&mut cipher, auth_data.as_mut_slice());
 
@@ -61,17 +63,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_unpack_ping_message_package() {
+    fn test_unpack_ping_message_packet() {
         let node_id_data = hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
         let node_id = NodeId(node_id_data);
-        let package_data = hex!(
+        let packet_data = hex!(
             "00000000000000000000000000000000088b3d4342774649325f313964a39e55"
             "ea96c005ad52be8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d3"
             "4c4f53245d08dab84102ed931f66d1492acb308fa1c6715b9d139b81acbdcc"
         );
 
         let (_, _, _, _, auth_data, encrypted_message_data) =
-            unpack(&node_id, &package_data).unwrap();
+            unpack(&node_id, &packet_data).unwrap();
         assert_eq!(
             hex::encode(&auth_data),
             "aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb"

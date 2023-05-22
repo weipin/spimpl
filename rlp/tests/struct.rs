@@ -36,7 +36,7 @@ impl<'a> Decode<'a> for Entry<'a> {
         let field1: &'a [u8] = list_iter.next_item()?;
         let field2: Vec<u8> = list_iter.next_item()?;
 
-        if !list_iter.next().is_none() {
+        if list_iter.next().is_some() {
             return Err(Error::ListDecodingNumberDoesNotMatch);
         }
 

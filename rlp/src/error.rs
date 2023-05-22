@@ -11,10 +11,12 @@
 pub enum Error {
     #[error("byte length of item data doesn't match header info")]
     ItemDataWithInvalidByteLength,
-    #[error("invalid item data: single byte isn't its own RLP encoding")]
-    ItemDataWithInvalidSingleByteEncoding,
-    #[error("invalid payload byte length: value less than 56")]
-    ItemPayloadWithInvalidByteLengthLessThan56,
+    #[error("single byte encoded as two")]
+    SingleByteEncodedAsTwo,
+    #[error("short string encoded as long")]
+    ShortStringEncodedAsLong,
+    #[error("short list encoded as long")]
+    ShortListEncodedAsLong,
     #[error("empty decoding data")]
     EmptyData,
     #[error("unexpected decoding item type")]

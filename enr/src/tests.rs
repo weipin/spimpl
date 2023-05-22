@@ -248,6 +248,11 @@ mod tests {
                 "enr:-IS4QLJYdRwxdy-AbzWC6wL9ooB6O6uvCvJsJ36rbJztiAs1JzPY0__YkgFzZwNUuNhm1BDN6c4-UVRCJP9bXNCmoDYBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8="
             ),
             (
+                "example_record_urlbase64_with_trailingbits",
+                Error::DecodingFailedForInvalidInput,
+                "enr:-IS4QLJYdRwxdy-AbzWC6wL9ooB6O6uvCvJsJ36rbJztiAs1JzPY0__YkgFzZwNUuNhm1BDN6c4-UVRCJP9bXNCmoDYBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl9"
+            ),
+            (
                 "example_record_base64",
                 Error::DecodingFailedForInvalidInput,
                 "enr:+IS4QLJYdRwxdy+AbzWC6wL9ooB6O6uvCvJsJ36rbJztiAs1JzPY0//YkgFzZwNUuNhm1BDN6c4+UVRCJP9bXNCmoDYBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2/oxVtw0RW/QAdpzBQA8yWM0xOIN1ZHCCdl8"

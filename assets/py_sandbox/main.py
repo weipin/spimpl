@@ -1,9 +1,15 @@
 if __name__ == '__main__':
     import os
+    from pathlib import Path
 
-    playgrounds = [('RLP', 'eth_rlp.py'), ('ENR', 'eth_enr_v4.py'),
-                   ('DISCV5_ID_SIGNATURE', 'discv5_id_signature.py')]
-    for name, filename in playgrounds:
-        print(f'### {name} ###{os.linesep}')
-        os.system(f'python3 ./playgrounds/{filename}')
-        print(f'{os.linesep}')
+    for _, _, files in os.walk('./playgrounds/'):
+        for filename in files:
+            if filename.startswith('_'):
+                continue
+            if not filename.endswith('.py'):
+                continue
+
+            label = Path(filename).stem.upper()
+            print(f'### {label} ###{os.linesep}')
+            os.system(f'python3 ./playgrounds/{filename}')
+            print(f'{os.linesep}')

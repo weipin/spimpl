@@ -5,6 +5,8 @@ def do(local_objs, module_name):
 
 
 def smart_repr(obj):
-    if type(obj) is bytes:
+    if type(obj) == str:
+        return obj
+    if type(obj) is bytes or bytearray:
         return f'0x{obj.hex()}'
     return obj

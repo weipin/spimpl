@@ -205,6 +205,6 @@ def first_byte_lt_ff():
 
 
 if __name__ == '__main__':
-    import run_all_callable
+    import _run_all_callable as run_all_callable
 
     run_all_callable.do(locals(), __name__)

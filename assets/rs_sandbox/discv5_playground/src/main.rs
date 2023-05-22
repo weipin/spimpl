@@ -1,5 +1,7 @@
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
+use hex_literal::hex;
+
 use discv5::enr::{CombinedKey, Enr};
 use discv5::rpc::{self, Message};
 
@@ -11,6 +13,28 @@ fn ping_1() {
         body: rpc::RequestBody::Ping { enr_seq },
     });
     println!("ping_1: {}", hex::encode(message.encode()));
+}
+
+fn ping_2() {
+    let request_id = rpc::RequestId(hex!("00000001").to_vec());
+    let enr_seq = 2;
+
+    let message = Message::Request(rpc::Request {
+        id: request_id,
+        body: rpc::RequestBody::Ping { enr_seq },
+    });
+    println!("ping_2: {}", hex::encode(message.encode()));
+}
+
+fn ping_3() {
+    let request_id = rpc::RequestId(hex!("00000001").to_vec());
+    let enr_seq = 1;
+
+    let message = Message::Request(rpc::Request {
+        id: request_id,
+        body: rpc::RequestBody::Ping { enr_seq },
+    });
+    println!("ping_3: {}", hex::encode(message.encode()));
 }
 
 fn pong_ipv4_ipv6() {
@@ -95,6 +119,8 @@ fn foo_request_id() -> rpc::RequestId {
 
 fn main() {
     ping_1();
+    ping_2();
+    ping_3();
     pong_ipv4_ipv6();
     findnode_1();
     nodes_1();

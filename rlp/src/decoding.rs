@@ -60,7 +60,7 @@ pub fn decode_header_unchecked(
                 // Single byte (in [0x00, 0x7f]) encoded as two is invalid.
                 // https://github.com/paritytech/parity-common/issues/49
                 if data[1] < 0x80 {
-                    return Err(Error::ItemDataWithInvalidSingleByteEncoding);
+                    return Err(Error::SingleByteEncodedAsTwo);
                 }
             }
             Ok((ItemType::SingleValue, 1, payload_byte_length))
@@ -80,7 +80,7 @@ pub fn decode_header_unchecked(
             );
             // Short string (0-55 bytes) encoded as long is invalid.
             if payload_byte_length < 56 {
-                return Err(Error::ItemPayloadWithInvalidByteLengthLessThan56);
+                return Err(Error::ShortStringEncodedAsLong);
             }
             Ok((
                 ItemType::SingleValue,
@@ -112,7 +112,7 @@ pub fn decode_header_unchecked(
             );
             // Short list (0-55 bytes) encoded as long is invalid.
             if payload_byte_length < 56 {
-                return Err(Error::ItemPayloadWithInvalidByteLengthLessThan56);
+                return Err(Error::ShortListEncodedAsLong);
             }
 
             Ok((
@@ -191,27 +191,15 @@ mod tests {
             // ...continue...(list)
             (Error::ItemDataWithInvalidByteLength, &hex!("f938")),
             // short encoded as long: payload length < 56 (single value)
-            (
-                Error::ItemPayloadWithInvalidByteLengthLessThan56,
-                &hex!("b801"),
-            ),
-            (
-                Error::ItemPayloadWithInvalidByteLengthLessThan56,
-                &hex!("b837"),
-            ),
+            (Error::ShortStringEncodedAsLong, &hex!("b801")),
+            (Error::ShortStringEncodedAsLong, &hex!("b837")),
             // ...continue...(list)
-            (
-                Error::ItemPayloadWithInvalidByteLengthLessThan56,
-                &hex!("f801"),
-            ),
-            (
-                Error::ItemPayloadWithInvalidByteLengthLessThan56,
-                &hex!("f837"),
-            ),
+            (Error::ShortListEncodedAsLong, &hex!("f801")),
+            (Error::ShortListEncodedAsLong, &hex!("f837")),
             // single byte encoded as two
-            (Error::ItemDataWithInvalidSingleByteEncoding, &hex!("8100")),
-            (Error::ItemDataWithInvalidSingleByteEncoding, &hex!("8101")),
-            (Error::ItemDataWithInvalidSingleByteEncoding, &hex!("817f")),
+            (Error::SingleByteEncodedAsTwo, &hex!("8100")),
+            (Error::SingleByteEncodedAsTwo, &hex!("8101")),
+            (Error::SingleByteEncodedAsTwo, &hex!("817f")),
         ];
 
         for (error, data) in test_data {

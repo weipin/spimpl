@@ -13,9 +13,9 @@ use crate::types::Nonce;
 
 use super::error::Error;
 
-pub(crate) fn unpack_static_header(bytes: &[u8]) -> Result<(Flag, Nonce, AuthDataSize), Error> {
-    debug_assert_eq!(bytes.len(), STATIC_HEADER_BYTE_LENGTH);
-
+pub(crate) fn unpack_static_header(
+    bytes: &[u8; STATIC_HEADER_BYTE_LENGTH],
+) -> Result<(Flag, Nonce, AuthDataSize), Error> {
     let (protocol_id_slice, remaining) = bytes.split_at(PROTOCOL_ID.len());
     if protocol_id_slice != PROTOCOL_ID {
         return Err(Error::InvalidProtocolId);

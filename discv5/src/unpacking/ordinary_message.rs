@@ -56,7 +56,7 @@ mod tests {
     use super::unpack as unpack_ordinary_message;
 
     #[test]
-    fn test_unpack_ping_message_package() {
+    fn test_unpack_ping_message_packet() {
         let dest_node_id_data =
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
         let dest_node_id = NodeId(dest_node_id_data);
@@ -65,14 +65,14 @@ mod tests {
             request_id: RequestId::from_vec(hex!("00000001").to_vec()).unwrap(),
             enr_seq: 2,
         };
-        let package_data = hex!(
+        let packet_data = hex!(
             "00000000000000000000000000000000088b3d4342774649325f313964a39e55"
             "ea96c005ad52be8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d3"
             "4c4f53245d08dab84102ed931f66d1492acb308fa1c6715b9d139b81acbdcc"
         );
 
         let (masking_iv, flag, nonce, static_header, auth_data, encrypted_message_data) =
-            unpack(&dest_node_id, &package_data).unwrap();
+            unpack(&dest_node_id, &packet_data).unwrap();
         assert_eq!(flag, Flag::OrdinaryMessage);
 
         let (src_node_id, message_data) = unpack_ordinary_message(

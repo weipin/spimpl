@@ -15,6 +15,7 @@ where
 
     fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, Error> {
         let list_iter = payload.list_iter_unchecked();
+
         let mut v = vec![];
         for result in list_iter {
             match result {

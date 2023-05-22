@@ -33,7 +33,7 @@ mod tests {
         };
 
         let encoded = messages::encode(&talkresp);
-        // discv5_messages: `talkresp_1`
+        // discv5_playground: `talkresp_1`
         assert_eq!(encoded, hex_literal::hex!("06cd88010203040506070883070809"));
 
         assert_eq!(rlp::decode::<TalkResp>(&encoded[1..]).unwrap(), talkresp);

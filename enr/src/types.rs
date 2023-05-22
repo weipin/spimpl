@@ -8,5 +8,5 @@
 pub type SequenceNumber = u64;
 
 /// Represents a 256-bit node ID.
-#[derive(rlp::Decode, rlp::Encode)]
+#[derive(rlp::Decode, rlp::Encode, Debug)]
 pub struct NodeId(pub [u8; 32]);

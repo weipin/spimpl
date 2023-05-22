@@ -172,7 +172,7 @@ fn decode_struct_fields(name: &Ident, data: &Data) -> TokenStream {
                         let mut list_iter = payload.list_iter_unchecked();
                         #(#recurse1)*
 
-                        if !list_iter.next().is_none() {
+                        if list_iter.next().is_some() {
                             return Err(rlp::Error::ListDecodingNumberDoesNotMatch);
                         }
 

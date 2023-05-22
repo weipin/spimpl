@@ -7,8 +7,9 @@
 pub(crate) mod error;
 mod handshake_message;
 mod ordinary_message;
-mod package;
+mod packet;
 mod static_header;
+mod tests;
 mod whoareyou;
 
 pub use error::Error;
@@ -16,5 +17,5 @@ pub use handshake_message::{
     unpack as unpack_handshake_message, unpack_with_record as unpack_handshake_message_with_record,
 };
 pub use ordinary_message::unpack as unpack_ordinary_message;
-pub use package::unpack;
+pub use packet::unpack;
 pub use whoareyou::unpack as unpack_whoareyou;

@@ -73,7 +73,7 @@ fn test_canonical_string_encoding() {
 
     assert_eq!(
         decode::<Vec<&[u8]>>(&[0xc0 + 4, 0xb7 + 1, 2, b'a', b'b']).unwrap_err(),
-        Error::ItemPayloadWithInvalidByteLengthLessThan56
+        Error::ShortStringEncodedAsLong
     );
 }
 
@@ -86,7 +86,7 @@ fn test_canonical_list_encoding() {
 
     assert_eq!(
         decode::<Vec<&[u8]>>(&[0xf7 + 1, 3, 0x82, b'a', b'b']).unwrap_err(),
-        Error::ItemPayloadWithInvalidByteLengthLessThan56
+        Error::ShortListEncodedAsLong
     );
 }
 
@@ -136,7 +136,7 @@ fn test_nested_list_roundtrip() {
             let mut list_iter = payload.list_iter_unchecked();
             let u1: u64 = list_iter.next_item()?;
             let u2: u64 = list_iter.next_item()?;
-            if !list_iter.next().is_none() {
+            if list_iter.next().is_some() {
                 return Err(Error::ListDecodingNumberDoesNotMatch);
             }
 

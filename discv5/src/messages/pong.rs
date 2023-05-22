@@ -47,7 +47,7 @@ mod tests {
             recipient_port: u16::MAX,
         };
         let encoded = messages::encode(&pong);
-        // discv5_messages: `pong_ipv4_ipv6`
+        // discv5_playground: `pong_ipv4_ipv6`
         assert_eq!(encoded, hex!("02d288010203040506070807847f00000182ffff"));
         assert_eq!(rlp::decode::<Pong>(&encoded[1..]).unwrap(), pong);
 

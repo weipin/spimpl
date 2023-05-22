@@ -7,8 +7,7 @@
 use enr::{NodeId, SequenceNumber};
 
 use crate::packet::constants::{
-    MAX_PACKET_BYTE_LENGTH, MIN_PACKET_BYTE_LENGTH, PROTOCOL_ID, VERSION,
-    WHOAREYOU_AUTHDATA_SIZE_BYTES,
+    MIN_PACKET_BYTE_LENGTH, PROTOCOL_ID, VERSION, WHOAREYOU_AUTHDATA_SIZE_BYTES,
 };
 use crate::packet::flag::Flag;
 use crate::packet::types::{IdNonce, MaskingIv};
@@ -33,9 +32,7 @@ pub fn pack(
         &mut output,
     );
 
-    debug_assert!(output.len() >= MIN_PACKET_BYTE_LENGTH);
-    debug_assert!(output.len() <= MAX_PACKET_BYTE_LENGTH);
-
+    debug_assert_eq!(output.len(), MIN_PACKET_BYTE_LENGTH);
     output
 }
 

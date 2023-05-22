@@ -24,27 +24,8 @@ pub struct Record {
 }
 
 /// Represents the RLP encoded form of a `Record`.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(rlp::Encode, rlp::Decode, Clone, Debug, PartialEq)]
 pub struct RecordRlpEncoded(Vec<u8>);
-
-impl rlp::Encode for RecordRlpEncoded {
-    // Encodes as it is.
-    fn encode_to(&self, output: &mut Vec<u8>) {
-        output.extend(&self.0);
-    }
-}
-
-impl<'a> rlp::Decode<'a> for RecordRlpEncoded {
-    const TYPE: rlp::ItemType = rlp::ItemType::SingleValue;
-
-    fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, rlp::Error> {
-        // Decodes as it is.
-        if payload.0.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
-            return Err(rlp::Error::ItemPayloadByteLengthTooLarge);
-        }
-        Ok(RecordRlpEncoded::from_vec(payload.0.to_vec()).unwrap())
-    }
-}
 
 impl RecordRlpEncoded {
     /// Creates a `RecordRlpEncoded` from a byte vector.

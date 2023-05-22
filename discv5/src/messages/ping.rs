@@ -34,7 +34,7 @@ mod tests {
         };
 
         let encoded = messages::encode(&ping);
-        // discv5_messages: `ping_1`
+        // discv5_playground: `ping_1`
         assert_eq!(encoded, hex_literal::hex!("01ca88010203040506070807"));
 
         assert_eq!(rlp::decode::<Ping>(&encoded[1..]).unwrap(), ping);
