@@ -44,7 +44,7 @@ fn build_header(nonce: &Nonce, id_nonce: &IdNonce, enr_seq: SequenceNumber) -> V
     output.push(Flag::Whoareyou.value());
     output.extend(nonce.bytes());
     output.extend(WHOAREYOU_AUTHDATA_SIZE_BYTES);
-    output.extend(id_nonce.0);
+    output.extend(id_nonce.bytes());
     output.extend(enr_seq.to_be_bytes());
 
     output
@@ -65,10 +65,10 @@ mod tests {
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
         let masking_iv_data = hex!("00000000000000000000000000000000");
 
-        let nonce = Nonce::from_bytes(nonce_data);
-        let id_nonce = IdNonce(id_nonce_data);
-        let dest_node_id = NodeId(dest_node_id_data);
-        let masking_iv = MaskingIv::from_bytes(masking_iv_data);
+        let nonce = Nonce::from_slice(&nonce_data);
+        let id_nonce = IdNonce::from_slice(&id_nonce_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
+        let masking_iv = MaskingIv::from_slice(&masking_iv_data);
 
         let packed = pack(&nonce, &dest_node_id, &masking_iv, &id_nonce, enr_seq);
         // Whoareyou has the mininmum packet size.

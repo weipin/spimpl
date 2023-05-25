@@ -11,7 +11,8 @@ use enr::NodeId;
 use crate::packet::constants::{
     MAX_PACKET_BYTE_LENGTH, MIN_PACKET_BYTE_LENGTH, STATIC_HEADER_BYTE_LENGTH,
 };
-use crate::packet::{aesctr, Flag, MaskingIv};
+use crate::packet::types::StaticHeader;
+use crate::packet::{aesctr, Flag, MaskingIv, MaskingIvType};
 use crate::types::Nonce;
 
 use super::error::Error;
@@ -19,10 +20,20 @@ use super::static_header::unpack_static_header;
 
 // (masking-iv, flag, nonce, static_header, auth_data, encrypted_message_data)
 #[allow(clippy::type_complexity)]
-pub fn unpack<'a>(
+pub fn unpack<'a, 'b>(
     node_id: &NodeId,
     bytes: &'a [u8],
-) -> Result<(MaskingIv, Flag, Nonce, Vec<u8>, Vec<u8>, &'a [u8]), Error> {
+) -> Result<
+    (
+        MaskingIv<'a>,
+        Flag,
+        Nonce<'b>,
+        StaticHeader,
+        Vec<u8>,
+        &'a [u8],
+    ),
+    Error,
+> {
     if bytes.len() < MIN_PACKET_BYTE_LENGTH {
         return Err(Error::PacketTooSmall);
     }
@@ -30,20 +41,20 @@ pub fn unpack<'a>(
         return Err(Error::PacketTooLarge);
     }
 
-    let (masking_iv_slice, remaining) = bytes.split_at(size_of::<MaskingIv>());
-    let masking_iv = MaskingIv::from_bytes(masking_iv_slice.try_into().unwrap());
+    let (masking_iv_slice, remaining) = bytes.split_at(size_of::<MaskingIvType>());
+    let masking_iv = MaskingIv::from_slice(masking_iv_slice.try_into().unwrap());
 
     let mut cipher = aesctr::new_cipher(
-        &node_id.0[..16].try_into().unwrap(),
+        &node_id.bytes()[..16].try_into().unwrap(),
         masking_iv_slice.try_into().unwrap(),
     );
 
     let (masked_static_header_slice, remaining) = remaining.split_at(STATIC_HEADER_BYTE_LENGTH);
-    let mut static_header = masked_static_header_slice.to_vec();
-    aesctr::apply_keystream(&mut cipher, static_header.as_mut_slice());
+    let mut static_header = [0; STATIC_HEADER_BYTE_LENGTH];
+    static_header.copy_from_slice(masked_static_header_slice);
+    aesctr::apply_keystream(&mut cipher, &mut static_header);
 
-    let (flag, nonce, auth_data_size) =
-        unpack_static_header(&static_header.as_slice().try_into().unwrap())?;
+    let (flag, nonce, auth_data_size) = unpack_static_header(&static_header)?;
 
     if remaining.len() < auth_data_size as usize {
         return Err(Error::InvalidAuthDataBytes);
@@ -53,6 +64,7 @@ pub fn unpack<'a>(
     let mut auth_data = auth_data_slice.to_vec();
     aesctr::apply_keystream(&mut cipher, auth_data.as_mut_slice());
 
+    let nonce = Nonce::from_array(*nonce.bytes());
     Ok((masking_iv, flag, nonce, static_header, auth_data, message))
 }
 
@@ -65,7 +77,7 @@ mod tests {
     #[test]
     fn test_unpack_ping_message_packet() {
         let node_id_data = hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-        let node_id = NodeId(node_id_data);
+        let node_id = NodeId::from_slice(&node_id_data);
         let packet_data = hex!(
             "00000000000000000000000000000000088b3d4342774649325f313964a39e55"
             "ea96c005ad52be8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d3"

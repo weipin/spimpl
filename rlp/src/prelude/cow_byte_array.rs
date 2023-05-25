@@ -4,24 +4,27 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-//! Implements RLP for `[u8; N]`.
+//! Implements RLP for `Cow<[u8]>`.
+
+use std::borrow::Cow;
 
 use crate::{Decode, Encode, Error, ItemPayloadSlice, ItemType};
 
-impl<'a, const N: usize> Decode<'a> for [u8; N] {
+impl<'a, const N: usize> Decode<'a> for Cow<'a, [u8; N]> {
     const TYPE: ItemType = ItemType::SingleValue;
 
-    fn decode(payload: ItemPayloadSlice) -> Result<Self, Error> {
-        payload
+    fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, Error> {
+        let data: &[u8; N] = payload
             .0
             .try_into()
-            .map_err(|_| Error::InvalidByteRepresentaion)
+            .map_err(|_| Error::InvalidByteRepresentaion)?;
+        Ok(Cow::Borrowed(data))
     }
 }
 
-impl<const N: usize> Encode for [u8; N] {
+impl<'a, const N: usize> Encode for Cow<'a, [u8; N]> {
     fn encode_to(&self, output: &mut Vec<u8>) {
-        ItemPayloadSlice(self).encode_as_single_value(output);
+        ItemPayloadSlice(self.as_slice()).encode_as_single_value(output);
     }
 }
 
@@ -29,16 +32,19 @@ impl<const N: usize> Encode for [u8; N] {
 mod tests {
     use crate::{decode, encode, Error};
 
+    use super::*;
+
     #[test]
     fn test_byte_array() {
         let data: [u8; 3] = [1, 2, 3];
+        let cow: Cow<[u8; 3]> = Cow::Borrowed(&data);
         // eth_rlp.py: `encode_bytes_1_2_3`
         let encoded = &[0x83, 1, 2, 3];
 
-        let output = encode(&data);
+        let output = encode(&cow);
         assert_eq!(output, encoded);
 
-        assert_eq!(decode::<[u8; 3]>(&output).unwrap(), data);
+        assert_eq!(decode::<Cow<[u8; 3]>>(&output).unwrap(), cow);
     }
 
     #[test]
@@ -47,7 +53,7 @@ mod tests {
         let encoded = &[0x83, 1, 2, 3];
 
         assert_eq!(
-            decode::<[u8; 4]>(encoded).unwrap_err(),
+            decode::<Cow<[u8; 4]>>(encoded).unwrap_err(),
             Error::InvalidByteRepresentaion
         );
     }

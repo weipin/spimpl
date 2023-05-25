@@ -6,15 +6,15 @@
 
 use std::mem::size_of;
 
-use crate::packet::constants::{PROTOCOL_ID, STATIC_HEADER_BYTE_LENGTH, VERSION};
-use crate::packet::types::AuthDataSize;
+use crate::packet::constants::{PROTOCOL_ID, VERSION};
+use crate::packet::types::{AuthDataSize, StaticHeader};
 use crate::packet::Flag;
-use crate::types::Nonce;
+use crate::types::{Nonce, NonceType};
 
 use super::error::Error;
 
 pub(crate) fn unpack_static_header(
-    bytes: &[u8; STATIC_HEADER_BYTE_LENGTH],
+    bytes: &StaticHeader,
 ) -> Result<(Flag, Nonce, AuthDataSize), Error> {
     let (protocol_id_slice, remaining) = bytes.split_at(PROTOCOL_ID.len());
     if protocol_id_slice != PROTOCOL_ID {
@@ -30,8 +30,8 @@ pub(crate) fn unpack_static_header(
     let (flag_slice, remaining) = remaining.split_at(1);
     let flag = Flag::from_u8(*flag_slice.first().unwrap()).ok_or(Error::InvalidFlag)?;
 
-    let (nonce_slice, remaining) = remaining.split_at(size_of::<Nonce>());
-    let nonce = Nonce::from_bytes(nonce_slice.try_into().unwrap());
+    let (nonce_slice, remaining) = remaining.split_at(size_of::<NonceType>());
+    let nonce = Nonce::from_slice(nonce_slice.try_into().unwrap());
 
     if remaining.len() != size_of::<AuthDataSize>() {
         return Err(Error::InvalidAuthDataSize);

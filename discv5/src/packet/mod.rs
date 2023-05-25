@@ -11,4 +11,4 @@ pub(crate) mod flag;
 pub(crate) mod types;
 
 pub use flag::Flag;
-pub use types::{IdNonce, MaskingIv};
+pub use types::{IdNonce, MaskingIv, MaskingIvType};

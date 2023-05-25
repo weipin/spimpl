@@ -8,9 +8,9 @@
 mod tests {
     use hex_literal::hex;
 
-    use enr::{NodeId, Record, Scheme, Schemev4, SequenceNumber};
+    use enr::{NodeId, Scheme, Schemev4};
 
-    use crate::packet::{Flag, IdNonce};
+    use crate::packet::Flag;
     use crate::unpacking::{
         unpack, unpack_handshake_message, unpack_handshake_message_with_record,
         unpack_ordinary_message, unpack_whoareyou, Error,
@@ -195,6 +195,7 @@ mod tests {
             ("invalid_id_signature_longer", Error::EnrDecodingFailed(enr::Error::InvalidPublicKeyData("malformed public key".to_string())), &hex!("00000000000000000000000000000000088b3d4342774649305f313964a39e55ea96c005ad539c8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d34c4f53245d08da4bb23698868350aaad22e3ab8dd034f548a1c43cd246be98562fafa0a1fa86d8e7a3b95ae78cc2b988ded6a5b59eb83ad58097252188b902b21481e30e5e285f1973530fea5142053c97feb5fc3f5d0ff3d71008a5b6724bbfc8c97746524e695129d2bd68c13b95e8687264923226593c1cdb64d1377d3b68b3b755f98ed4631901e5e67c75b838b759df976df74dc60a07cc7c20a3102303bf6e56b02560c31d8383f2804c32fec46eef5d0b79b4c30b247350069605025c86c70190214e6ebda6a9c61c90401dafe99dcf42189ad5f1f9a57322e640c851db1247e69e618d39479808d65093ccab5aa55102b1b4dc1d963137b4463daa00caa1")),
             ("invalid_eph_pubkey_shorter", Error::InvalidAuthDataBytes, &hex!("00000000000000000000000000000000088b3d4342774649305f313964a39e55ea96c005ad539c8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d34c4f53245d08da4bb23698868350aaad22e3ab8dd034f548a1c43cd246be98562fafa0a1fa86d8e7a3b95ae78cc2b988ded6a5b59eb83ad58097252188b902b21481e30e5e285f1973579670a9041b2dfb583a2f63a402202acc95b9e0d0d6572097a5fcb59cd95bd1f5724a64bcd418e63e904fe6a1f4d3a4e5f33aff1d81c68b414546b4e4ebbfa0b52b715d4c34ffa4dab25051bb793612ec715721d29a2ade8c9570944724a388352484689bc825c4fd1ae8aee119f2fd420e261650e625c6de956ded14f0b89e866c08d65093ccab5aa574b7c6fbc7def0121c17c2f02b6e5d69")),
             ("invalid_eph_pubkey_longer", Error::EnrDecodingFailed(enr::Error::RlpDecodingError(rlp::Error::ItemDataWithInvalidByteLength)), &hex!("00000000000000000000000000000000088b3d4342774649305f313964a39e55ea96c005ad539c8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d34c4f53245d08da4bb23698868350aaad22e3ab8dd034f548a1c43cd246be98562fafa0a1fa86d8e7a3b95ae78cc2b988ded6a5b59eb83ad58097252188b902b21481e30e5e285f19735796706adff216ab862a9186875f9494150c4ae06fa4d1f0396c93f215fa4ef5241f68c13b95e8687264923226593c1cdb64d1377d3b68b3b755f98ed4631901e5e67c75b838b759df976df74dc60a07cc7c20a3102303bf6e56b02560c31d8383f2804c32fec46eef5d0b79b4c30b247350069605025c86c70190214e6ebda6a9c61c90401dafe99dcf42189ad5f1f9a57322e640c851db1247e69e618d39479808d65093ccab5aa57f84262478779fbff059f54d59ddecdf")),
+            ("invalid_record", Error::EnrDecodingFailed(enr::Error::RlpDecodingError(rlp::Error::ItemPayloadByteLengthTooLarge)), &hex!("00000000000000000000000000000000088b3d4342774649305f313964a39e55ea96c005ad52488c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d34c4f53245d08da4bb23698868350aaad22e3ab8dd034f548a1c43cd246be98562fafa0a1fa86d8e7a3b95ae78cc2b988ded6a5b59eb83ad58097252188b902b21481e30e5e285f19735796706adff216ab862a9186875f9494150c4ae06fa4d1f0396c93f215fa4ef524e0c104c34667e5bfd55479f6106e1f303f76b003e9c31286b16f515e23323f8e5dfc10478fab8cad884166b1609923ca99de5781fc3da57383f8c02bb3fc0b814538e49bd84785e2bbff3b03340624742e069608d65093ccab5aa50d18c197bb9f8b89f51cf79a5f03d9aa")),
             ("invalid_flag_unexpected_value", Error::InvalidFlag, &hex!("00000000000000000000000000000000088b3d43427746497f5f313964a39e55ea96c005ad539c8c7560413a7008f16c9e6d2f43bbea8814a546b7409ce783d34c4f53245d08da4bb23698868350aaad22e3ab8dd034f548a1c43cd246be98562fafa0a1fa86d8e7a3b95ae78cc2b988ded6a5b59eb83ad58097252188b902b21481e30e5e285f19735796706adff216ab862a9186875f9494150c4ae06fa4d1f0396c93f215fa4ef524e0ed04c3c21e39b1868e1ca8105e585ec17315e755e6cfc4dd6cb7fd8e1a1f55e49b4b5eb024221482105346f3c82b15fdaae36a3bb12a494683b4a3c7f2ae41306252fed84785e2bbff3b022812d0882f06978df84a80d443972213342d04b9048fc3b1d5fcb1df0f822152eced6da4d3f6df27e70e4539717307a0208cd208d65093ccab5aa56371c7d9bbe07e5cddf7003c0b8a6459")),
             ("invalid_flag_2_bytes_a", Error::InvalidAuthDataBytes, &hex!("00000000000000000000000000000000088b3d434277464932ed313964a39e55ea96c005adad9f24754edcca6d616cef4b207c23ee62ef15ac5123cd751601253bea313aad31feb0d3b30559fcd151bbe889a35cf813f97995f0292fba417db0dba141a572106178406bb371e55d8cbbf645f6b0153a2ec7574aa7c1e2cc92f240b5b1724f25fa91d3010fea5142053c97feb5fc3f5d0ff3d71008a5b6724bbfc8c97746524e695129d2bd68c13b95e8687264923226593c1cdb64d1377d3b68b3b755f98ed4631901e5e67c75b838b759df976df74dc60a07cc7c20a3102303bf6e56b02560c31d8383f2804c32fec46eef5d0b79b4c30b247350069605025c86c70190214e6ebda6a9c61c90401dafe99dcf42189ad5f1f9a57322e640c851db1247e69e618d39479808d65093ccab5aa5d828b2600e6752c7873cf9762ff80e1e")),
             ("invalid_flag_2_bytes_b", Error::InvalidFlag, &hex!("00000000000000000000000000000000088b3d43427746497fed313964a39e55ea96c005adad9f24754edcca6d616cef4b207c23ee62ef15ac5123cd751601253bea313aad31feb0d3b30559fcd151bbe889a35cf813f97995f0292fba417db0dba141a572106178406bb371e55d8cbbf645f6b0153a2ec7574aa7c1e2cc92f240b5b1724f25fa91d3010fea5142053c97feb5fc3f5d0ff3d71008a5b6724bbfc8c97746524e695129d2bd68c13b95e8687264923226593c1cdb64d1377d3b68b3b755f98ed4631901e5e67c75b838b759df976df74dc60a07cc7c20a3102303bf6e56b02560c31d8383f2804c32fec46eef5d0b79b4c30b247350069605025c86c70190214e6ebda6a9c61c90401dafe99dcf42189ad5f1f9a57322e640c851db1247e69e618d39479808d65093ccab5aa51f274b900929ca307e5bd476d531f0cb")),
@@ -242,29 +243,28 @@ mod tests {
         }
     }
 
-    const DEST_NODE_ID: NodeId = NodeId(hex!(
+    const DEST_NODE_ID: NodeId = NodeId::from_array(hex!(
         "bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9"
     ));
     const READ_KEY: &[u8; 16] = &hex!("00000000000000000000000000000000");
 
-    fn process_whoareyou_packet(
-        dest_node_id: &NodeId,
-        bytes: &[u8],
-    ) -> Result<(IdNonce, SequenceNumber), Error> {
-        let (_, flag, _, static_header, auth_data, encrypted_message_data) =
-            unpack(dest_node_id, bytes)?;
+    fn process_whoareyou_packet<'a>(
+        dest_node_id: &'a NodeId,
+        bytes: &'a [u8],
+    ) -> Result<(), Error> {
+        let (_, flag, _, _, auth_data, encrypted_message_data) = unpack(dest_node_id, bytes)?;
         if flag != Flag::Whoareyou {
             return Err(Error::InvalidFlag);
         }
 
-        unpack_whoareyou(&static_header, &auth_data, encrypted_message_data)
+        unpack_whoareyou(&auth_data, encrypted_message_data).map(|_| ())
     }
 
-    fn process_ordinary_message_packet(
-        dest_node_id: &NodeId,
+    fn process_ordinary_message_packet<'a>(
+        dest_node_id: &'a NodeId,
         read_key: &[u8; 16],
-        bytes: &[u8],
-    ) -> Result<(NodeId, Vec<u8>), Error> {
+        bytes: &'a [u8],
+    ) -> Result<(), Error> {
         let (masking_iv, flag, nonce, static_header, auth_data, encrypted_message_data) =
             unpack(&dest_node_id, &bytes)?;
         if flag != Flag::OrdinaryMessage {
@@ -279,13 +279,14 @@ mod tests {
             &auth_data,
             encrypted_message_data,
         )
+        .map(|_| ())
     }
 
-    fn process_handshake_message_packet<S: Scheme>(
+    fn process_handshake_message_packet<'a, S: Scheme>(
         dest_node_id: &NodeId,
         read_key: &[u8; 16],
-        bytes: &[u8],
-    ) -> Result<(NodeId, S::Signature, S::PublicKey, Vec<u8>), Error> {
+        bytes: &'a [u8],
+    ) -> Result<(), Error> {
         let (masking_iv, flag, nonce, static_header, auth_data, encrypted_message_data) =
             unpack(&dest_node_id, &bytes)?;
         if flag != Flag::HandshakeMessage {
@@ -300,13 +301,14 @@ mod tests {
             &auth_data,
             encrypted_message_data,
         )
+        .map(|_| ())
     }
 
-    fn process_handshake_message_with_record_packet<S: Scheme>(
+    fn process_handshake_message_with_record_packet<'a, S: Scheme>(
         dest_node_id: &NodeId,
         read_key: &[u8; 16],
-        bytes: &[u8],
-    ) -> Result<(NodeId, S::Signature, S::PublicKey, Record, Vec<u8>), Error> {
+        bytes: &'a [u8],
+    ) -> Result<(), Error> {
         let (masking_iv, flag, nonce, static_header, auth_data, encrypted_message_data) =
             unpack(&dest_node_id, &bytes)?;
         if flag != Flag::HandshakeMessage {
@@ -321,5 +323,6 @@ mod tests {
             &auth_data,
             encrypted_message_data,
         )
+        .map(|_| ())
     }
 }

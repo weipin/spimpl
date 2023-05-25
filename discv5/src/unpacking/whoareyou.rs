@@ -8,27 +8,26 @@ use std::mem::size_of;
 
 use enr::SequenceNumber;
 
-use crate::packet::constants::{STATIC_HEADER_BYTE_LENGTH, WHOAREYOU_AUTHDATA_SIZE};
+use crate::packet::constants::WHOAREYOU_AUTHDATA_SIZE;
+use crate::packet::types::IdNonceType;
 use crate::packet::IdNonce;
 
 use super::Error;
 
-pub fn unpack(
-    static_header: &[u8],
-    auth_data: &[u8],
+pub fn unpack<'a>(
+    auth_data: &'a [u8],
     encrypted_message_data: &[u8],
-) -> Result<(IdNonce, SequenceNumber), Error> {
+) -> Result<(IdNonce<'a>, SequenceNumber), Error> {
     if !encrypted_message_data.is_empty() {
         return Err(Error::InvalidMessageByteLength);
     }
 
-    debug_assert_eq!(static_header.len(), STATIC_HEADER_BYTE_LENGTH);
     if auth_data.len() != WHOAREYOU_AUTHDATA_SIZE as usize {
         return Err(Error::InvalidAuthDataSize);
     }
 
-    let (id_nonce_slice, enr_seq_slice) = auth_data.split_at(size_of::<IdNonce>());
-    let id_nonce = IdNonce(id_nonce_slice.try_into().unwrap());
+    let (id_nonce_slice, enr_seq_slice) = auth_data.split_at(size_of::<IdNonceType>());
+    let id_nonce = IdNonce::from_slice(id_nonce_slice.try_into().unwrap());
     let enr_seq = SequenceNumber::from_be_bytes(enr_seq_slice.try_into().unwrap());
     Ok((id_nonce, enr_seq))
 }
@@ -47,18 +46,17 @@ mod tests {
     fn test_unpack_whoareyou() {
         let dest_node_id_data =
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-        let dest_node_id = NodeId(dest_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
         let packet_data = hex!(
             "00000000000000000000000000000000088b3d434277464933a1ccc59f5967ad"
             "1d6035f15e528627dde75cd68292f9e6c27d6b66c8100a873fcbaed4e16b8d"
         );
 
-        let (_, flag, _, static_header, auth_data, _) =
-            unpack(&dest_node_id, &packet_data).unwrap();
+        let (_, flag, _, _, auth_data, _) = unpack(&dest_node_id, &packet_data).unwrap();
         assert_eq!(flag, Flag::Whoareyou);
 
-        let (id_nonce, enr_seq) = unpack_whoareyou(&static_header, &auth_data, &[]).unwrap();
-        assert_eq!(id_nonce.0, hex!("0102030405060708090a0b0c0d0e0f10"));
+        let (id_nonce, enr_seq) = unpack_whoareyou(&auth_data, &[]).unwrap();
+        assert_eq!(id_nonce.bytes(), &hex!("0102030405060708090a0b0c0d0e0f10"));
         assert_eq!(enr_seq, 0);
     }
 }

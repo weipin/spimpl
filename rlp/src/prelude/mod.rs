@@ -9,6 +9,8 @@
 mod byte_array;
 mod byte_slice;
 mod byte_vec;
+mod cow_byte_array;
+mod cow_bytes;
 mod ipaddr;
 mod ipv4addr;
 mod ipv6addr;

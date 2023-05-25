@@ -4,24 +4,36 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::borrow::Cow;
+
 use rlp::{Decode, Error, ItemPayloadSlice, ItemType};
 
 // an RLP byte array of length <= 8 bytes
 #[derive(rlp::Encode, Clone, Debug, PartialEq)]
-pub struct RequestId(Vec<u8>);
+pub struct RequestId<'a>(Cow<'a, [u8]>);
 
-impl<'a> Decode<'a> for RequestId {
+impl<'a> Decode<'a> for RequestId<'a> {
     const TYPE: ItemType = ItemType::SingleValue;
 
     fn decode(payload: ItemPayloadSlice<'a>) -> Result<Self, Error> {
         if payload.0.len() > MAX_REQUEST_ID_BYTE_LENGTH {
             return Err(Error::ItemPayloadByteLengthTooLarge);
         }
-        Ok(RequestId(payload.0.to_vec()))
+        Ok(RequestId(payload.0.into()))
     }
 }
 
-impl RequestId {
+impl<'a> RequestId<'a> {
+    // Creates a `RequestId` from a byte slice.
+    //
+    // Returns None if the byte length of the slice is greater than 8.
+    pub fn from_slice(slice: &'a [u8]) -> Option<Self> {
+        if slice.len() > MAX_REQUEST_ID_BYTE_LENGTH {
+            return None;
+        }
+        Some(RequestId(slice.into()))
+    }
+
     // Creates a `RequestId` from a byte vector.
     //
     // Returns None if the byte length of the vector is greater than 8.
@@ -29,7 +41,11 @@ impl RequestId {
         if vec.len() > MAX_REQUEST_ID_BYTE_LENGTH {
             return None;
         }
-        Some(RequestId(vec))
+        Some(RequestId(vec.into()))
+    }
+
+    pub fn bytes(&self) -> &[u8] {
+        &self.0
     }
 }
 

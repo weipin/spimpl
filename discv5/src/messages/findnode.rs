@@ -9,12 +9,12 @@ use crate::types::{Log2Distance, RequestId};
 use super::{Message, Type};
 
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
-pub struct FindNode {
-    pub request_id: RequestId,
+pub struct FindNode<'a> {
+    pub request_id: RequestId<'a>,
     pub distances: Vec<Log2Distance>,
 }
 
-impl Message for FindNode {
+impl<'a> Message<'a> for FindNode<'a> {
     const TYPE: Type = Type::FindNode;
 }
 

@@ -4,19 +4,27 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::borrow::Cow;
+
 use rand::{CryptoRng, Rng};
 
 // nonce         = uint96    -- nonce of message
-#[derive(Debug, PartialEq)]
-pub struct Nonce([u8; 12]);
+pub type NonceType = [u8; 12];
 
-impl Nonce {
+#[derive(Debug, PartialEq)]
+pub struct Nonce<'a>(Cow<'a, NonceType>);
+
+impl<'a> Nonce<'a> {
     pub fn new<R: CryptoRng + Rng>(csprng: &mut R) -> Self {
-        Nonce(csprng.gen())
+        Nonce(Cow::Owned(csprng.gen()))
     }
 
-    pub(crate) fn from_bytes(bytes: [u8; 12]) -> Self {
-        Self(bytes)
+    pub fn from_slice(slice: &'a NonceType) -> Self {
+        Nonce(Cow::Borrowed(slice))
+    }
+
+    pub const fn from_array(array: NonceType) -> Self {
+        Nonce(Cow::Owned(array))
     }
 
     pub fn bytes(&self) -> &[u8; 12] {

@@ -25,7 +25,7 @@ impl Record {
     }
 }
 
-impl RecordRlpEncoded {
+impl RecordRlpEncoded<'_> {
     /// Creates a `RecordRlpEncoded` from ENR textual form.
     pub fn from_textual_form(s: &str) -> Result<Self, Error> {
         let base64 = s

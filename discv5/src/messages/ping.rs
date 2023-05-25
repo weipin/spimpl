@@ -9,12 +9,12 @@ use crate::types::RequestId;
 use super::{Message, Type};
 
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
-pub struct Ping {
-    pub request_id: RequestId,
+pub struct Ping<'a> {
+    pub request_id: RequestId<'a>,
     pub enr_seq: enr::SequenceNumber,
 }
 
-impl Message for Ping {
+impl<'a> Message<'a> for Ping<'a> {
     const TYPE: Type = Type::Ping;
 }
 

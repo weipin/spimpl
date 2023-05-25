@@ -6,31 +6,32 @@
 
 use std::mem::size_of;
 
-use enr::{NodeId, Scheme, SequenceNumber};
+use enr::{NodeIdType, Scheme, SequenceNumber};
 
-use crate::types::Nonce;
+use crate::types::NonceType;
 
 use super::flag::Flag;
-use super::types::{AuthDataSize, IdNonce};
+use super::types::{AuthDataSize, IdNonceType};
 
-pub(crate) const ORDINARY_MESSAGE_AUTHDATA_SIZE: AuthDataSize = size_of::<NodeId>() as AuthDataSize;
+pub(crate) const ORDINARY_MESSAGE_AUTHDATA_SIZE: AuthDataSize =
+    size_of::<NodeIdType>() as AuthDataSize;
 pub(crate) const ORDINARY_MESSAGE_AUTHDATA_SIZE_BYTES: &[u8; 2] =
     &ORDINARY_MESSAGE_AUTHDATA_SIZE.to_be_bytes();
 
 pub(crate) const WHOAREYOU_AUTHDATA_SIZE: AuthDataSize =
-    (size_of::<IdNonce>() + size_of::<SequenceNumber>()) as AuthDataSize;
+    (size_of::<IdNonceType>() + size_of::<SequenceNumber>()) as AuthDataSize;
 pub(crate) const WHOAREYOU_AUTHDATA_SIZE_BYTES: &[u8; 2] = &WHOAREYOU_AUTHDATA_SIZE.to_be_bytes();
 
 pub(crate) const STATIC_HEADER_BYTE_LENGTH: usize = PROTOCOL_ID.len()
     + VERSION.len()
     + size_of::<Flag>()
-    + size_of::<Nonce>()
+    + size_of::<NonceType>()
     + size_of::<AuthDataSize>();
 
 pub(crate) const fn size_of_handshake_message_authdata_fixed_part<S: Scheme>() -> AuthDataSize {
     // authdata      = authdata-head || id-signature || eph-pubkey || record
     // authdata-head = src-id || sig-size || eph-key-size
-    let size = size_of::<NodeId>()
+    let size = size_of::<NodeIdType>()
         + size_of::<u8>()
         + size_of::<u8>()
         + S::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH

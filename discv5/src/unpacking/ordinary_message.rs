@@ -6,21 +6,21 @@
 
 use enr::NodeId;
 
-use crate::packet::constants::{ORDINARY_MESSAGE_AUTHDATA_SIZE, STATIC_HEADER_BYTE_LENGTH};
+use crate::packet::constants::ORDINARY_MESSAGE_AUTHDATA_SIZE;
+use crate::packet::types::StaticHeader;
 use crate::packet::{aesgcm, MaskingIv};
 use crate::types::Nonce;
 
 use super::error::Error;
 
-pub fn unpack(
+pub fn unpack<'a>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
-    static_header: &[u8],
-    auth_data: &[u8],
+    static_header: &StaticHeader,
+    auth_data: &'a [u8],
     encrypted_message_data: &[u8],
-) -> Result<(NodeId, Vec<u8>), Error> {
-    debug_assert_eq!(static_header.len(), STATIC_HEADER_BYTE_LENGTH);
+) -> Result<(NodeId<'a>, Vec<u8>), Error> {
     if auth_data.len() != ORDINARY_MESSAGE_AUTHDATA_SIZE as usize {
         return Err(Error::InvalidAuthDataSize);
     }
@@ -39,7 +39,7 @@ pub fn unpack(
         return Err(Error::InvalidMessageByteLength);
     }
 
-    let node_id = NodeId(auth_data.try_into().unwrap());
+    let node_id = NodeId::from_slice(auth_data.try_into().unwrap());
     Ok((node_id, message_data))
 }
 
@@ -59,10 +59,10 @@ mod tests {
     fn test_unpack_ping_message_packet() {
         let dest_node_id_data =
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-        let dest_node_id = NodeId(dest_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
         let read_key = hex!("00000000000000000000000000000000");
         let ping = Ping {
-            request_id: RequestId::from_vec(hex!("00000001").to_vec()).unwrap(),
+            request_id: RequestId::from_slice(&hex!("00000001")).unwrap(),
             enr_seq: 2,
         };
         let packet_data = hex!(
@@ -85,8 +85,8 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            src_node_id.0,
-            hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
+            src_node_id.bytes(),
+            &hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
         );
 
         let (message_type, message_rlp_encoded) = decode_type(&message_data).unwrap();

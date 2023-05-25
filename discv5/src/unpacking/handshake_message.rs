@@ -6,26 +6,24 @@
 
 use std::mem::size_of;
 
-use enr::{NodeId, Record, RecordRlpEncoded, Scheme, Schemev4};
+use enr::{NodeId, NodeIdType, Record, RecordRlpEncoded, Scheme, Schemev4};
 
-use crate::packet::constants::{
-    size_of_handshake_message_authdata_fixed_part, STATIC_HEADER_BYTE_LENGTH,
-};
+use crate::packet::constants::size_of_handshake_message_authdata_fixed_part;
+use crate::packet::types::StaticHeader;
 use crate::packet::{aesgcm, MaskingIv};
 use crate::types::Nonce;
 
 use super::Error;
 
 #[allow(clippy::type_complexity)]
-pub fn unpack<S: Scheme>(
+pub fn unpack<'a, S: Scheme>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
-    static_header: &[u8],
-    auth_data: &[u8],
+    static_header: &StaticHeader,
+    auth_data: &'a [u8],
     encrypted_message_data: &[u8],
-) -> Result<(NodeId, S::Signature, S::PublicKey, Vec<u8>), Error> {
-    debug_assert_eq!(static_header.len(), STATIC_HEADER_BYTE_LENGTH);
+) -> Result<(NodeId<'a>, S::Signature, S::PublicKey, Vec<u8>), Error> {
     if auth_data.len() != size_of_handshake_message_authdata_fixed_part::<S>() as usize {
         return Err(Error::InvalidAuthDataSize);
     }
@@ -49,22 +47,21 @@ pub fn unpack<S: Scheme>(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn unpack_with_record<S: Scheme>(
+pub fn unpack_with_record<'a, S: Scheme>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
-    static_header: &[u8],
-    auth_data: &[u8],
+    static_header: &StaticHeader,
+    auth_data: &'a [u8],
     encrypted_message_data: &[u8],
-) -> Result<(NodeId, S::Signature, S::PublicKey, Record, Vec<u8>), Error> {
-    debug_assert_eq!(static_header.len(), STATIC_HEADER_BYTE_LENGTH);
+) -> Result<(NodeId<'a>, S::Signature, S::PublicKey, Record, Vec<u8>), Error> {
     if auth_data.len() <= size_of_handshake_message_authdata_fixed_part::<S>() as usize {
         return Err(Error::InvalidAuthDataSize);
     }
     let (src_node_id, id_signature, eph_pubkey, remaining_authdata) =
         unpack_authdata_fixed_part::<S>(auth_data)?;
-    let record_rlp_encoded = RecordRlpEncoded::from_vec(remaining_authdata.to_vec())
-        .map_err(Error::EnrDecodingFailed)?;
+    let record_rlp_encoded =
+        RecordRlpEncoded::from_slice(remaining_authdata).map_err(Error::EnrDecodingFailed)?;
     let record = Record::from_rlp_encoded::<Schemev4>(&record_rlp_encoded)
         .map_err(Error::EnrDecodingFailed)?;
 
@@ -93,7 +90,7 @@ fn unpack_authdata_fixed_part<S: Scheme>(
     let fixed_part_len = size_of_handshake_message_authdata_fixed_part::<S>() as usize;
     debug_assert!(bytes.len() >= fixed_part_len);
 
-    let (node_id_slice, remaining) = bytes.split_at(size_of::<NodeId>());
+    let (node_id_slice, remaining) = bytes.split_at(size_of::<NodeIdType>());
     let signature_size = u8::from_be_bytes([remaining[0]]);
     if signature_size as usize != S::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH {
         return Err(Error::EnrDecodingFailed(
@@ -117,7 +114,7 @@ fn unpack_authdata_fixed_part<S: Scheme>(
         .map_err(|e| Error::EnrDecodingFailed(enr::Error::InvalidPublicKeyData(format!("{e}"))))?;
 
     Ok((
-        NodeId(node_id_slice.try_into().unwrap()),
+        NodeId::from_slice(node_id_slice.try_into().unwrap()),
         signature,
         pubkey,
         remaining,
@@ -143,12 +140,12 @@ mod tests {
     fn test_unpack_handshake_message_packet() {
         let dest_node_id_data =
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-        let dest_node_id = NodeId(dest_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
         let read_key = hex!("4f9fac6de7567d1e3b1241dffe90f662");
         let eph_pubkey_data =
             hex!("039a003ba6517b473fa0cd74aefe99dadfdb34627f90fec6362df85803908f53a5");
         let ping = Ping {
-            request_id: RequestId::from_vec(hex!("00000001").to_vec()).unwrap(),
+            request_id: RequestId::from_slice(&hex!("00000001")).unwrap(),
             enr_seq: 1,
         };
         // discv5_id_signature: `ping_handshake_example_id_nonce_signing_without_extra_entropy`
@@ -183,8 +180,8 @@ mod tests {
         );
         assert_eq!(Schemev4::public_key_to_bytes(&eph_pubkey), eph_pubkey_data);
         assert_eq!(
-            src_node_id.0,
-            hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
+            src_node_id.bytes(),
+            &hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
         );
 
         let (message_type, message_rlp_encoded) = decode_type(&message_data).unwrap();
@@ -197,12 +194,12 @@ mod tests {
     fn test_unpack_handshake_message_packet_with_record() {
         let dest_node_id_data =
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-        let dest_node_id = NodeId(dest_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
         let read_key = hex!("53b1c075f41876423154e157470c2f48");
         let eph_pubkey_data =
             hex!("039a003ba6517b473fa0cd74aefe99dadfdb34627f90fec6362df85803908f53a5");
         let ping = Ping {
-            request_id: RequestId::from_vec(hex!("00000001").to_vec()).unwrap(),
+            request_id: RequestId::from_slice(&hex!("00000001")).unwrap(),
             enr_seq: 1,
         };
         // discv5_id_signature: `ping_handshake_with_record_example_id_nonce_signing_without_extra_entropy`
@@ -238,8 +235,8 @@ mod tests {
             )
             .unwrap();
         assert_eq!(
-            src_node_id.0,
-            hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
+            src_node_id.bytes(),
+            &hex!("aaaa8419e9f49d0083561b48287df592939a8d19947d8c0ef88f2a4856a69fbb")
         );
         assert_eq!(
             Schemev4::signature_to_bytes(&id_signature),
@@ -248,7 +245,7 @@ mod tests {
         assert_eq!(Schemev4::public_key_to_bytes(&eph_pubkey), eph_pubkey_data);
         assert_eq!(
             record.to_rlp_encoded::<Schemev4>().unwrap(),
-            RecordRlpEncoded::from_vec(record_rlp_encoded_data.to_vec()).unwrap()
+            RecordRlpEncoded::from_slice(&record_rlp_encoded_data).unwrap()
         );
 
         let (message_type, message_rlp_encoded) = decode_type(&message_data).unwrap();

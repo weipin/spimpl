@@ -11,14 +11,14 @@ use crate::types::RequestId;
 use super::{Message, Type};
 
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
-pub struct Pong {
-    pub request_id: RequestId,
+pub struct Pong<'a> {
+    pub request_id: RequestId<'a>,
     pub enr_seq: enr::SequenceNumber,
     pub recipient_ip: IpAddr,
     pub recipient_port: u16,
 }
 
-impl Message for Pong {
+impl<'a> Message<'a> for Pong<'a> {
     const TYPE: Type = Type::Pong;
 }
 

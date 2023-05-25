@@ -38,7 +38,7 @@ pub(crate) fn build_id_signature<S: Scheme>(
             S::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH,
             ephemeral_pubkey_data
         ),
-        (size_of::<enr::NodeId>(), &node_id_b.0)
+        (size_of::<enr::NodeIdType>(), &node_id_b.0)
     );
 
     let mut hasher = Sha256::new();
@@ -58,7 +58,7 @@ const fn id_signature_input_byte_length<S: Scheme>() -> usize {
     ID_SIGNATURE_TEXT_BYTE_LENGTH
         + CHALLENGE_DATA_BYTE_LENGTH
         + S::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH
-        + size_of::<NodeId>()
+        + size_of::<NodeIdType>()
 }
 
 pub(crate) const ID_SIGNATURE_TEXT: &[u8] = b"discovery v5 identity proof";
@@ -66,7 +66,7 @@ pub(crate) const ID_SIGNATURE_TEXT_BYTE_LENGTH: usize = ID_SIGNATURE_TEXT.len();
 
 // challenge-data     = masking-iv || static-header || authdata
 pub(crate) const CHALLENGE_DATA_BYTE_LENGTH: usize =
-    size_of::<MaskingIv>() + STATIC_HEADER_BYTE_LENGTH + WHOAREYOU_AUTHDATA_SIZE as usize;
+    size_of::<MaskingIvType>() + STATIC_HEADER_BYTE_LENGTH + WHOAREYOU_AUTHDATA_SIZE as usize;
 
 #[cfg(test)]
 mod tests {
@@ -93,7 +93,7 @@ mod tests {
             &mut id_signature_input_buf,
             &challenge_data,
             &ephemeral_pubkey_data,
-            &enr::NodeId(node_id_b_data),
+            &enr::NodeId::from_slice(&node_id_b_data),
             &static_key,
         )
         .unwrap();

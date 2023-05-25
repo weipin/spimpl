@@ -6,6 +6,7 @@
 
 //! Implements `Record`.
 
+use std::borrow::Cow;
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 use rlp::{ItemDataSlice, ItemPayloadSlice};
@@ -24,17 +25,26 @@ pub struct Record {
 }
 
 /// Represents the RLP encoded form of a `Record`.
-#[derive(rlp::Encode, rlp::Decode, Clone, Debug, PartialEq)]
-pub struct RecordRlpEncoded(Vec<u8>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecordRlpEncoded<'a>(Cow<'a, [u8]>);
 
-impl RecordRlpEncoded {
+impl<'a> RecordRlpEncoded<'a> {
+    /// Creates a `RecordRlpEncoded` from a byte slice.
+    pub fn from_slice(slice: &'a [u8]) -> Result<Self, Error> {
+        if slice.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
+            return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
+        }
+
+        Ok(RecordRlpEncoded(slice.into()))
+    }
+
     /// Creates a `RecordRlpEncoded` from a byte vector.
     pub fn from_vec(vec: Vec<u8>) -> Result<Self, Error> {
         if vec.len() > MAX_RLP_ENCODED_BYTE_LENGTH {
             return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
         }
 
-        Ok(RecordRlpEncoded(vec))
+        Ok(RecordRlpEncoded(vec.into()))
     }
 
     /// Returns a reference to the RLP-encoded record.
@@ -57,12 +67,12 @@ impl Record {
             return Err(Error::MaximumRecordRlpEncodedByteLengthExceeded);
         }
 
-        Ok(RecordRlpEncoded(encoded))
+        Ok(RecordRlpEncoded(encoded.into()))
     }
 
     /// Creates a `Record` from its RLP encoded form.
     pub fn from_rlp_encoded<S: Scheme>(record_encoded: &RecordRlpEncoded) -> Result<Self, Error> {
-        let mut list_iter = ItemDataSlice(record_encoded.0.as_slice())
+        let mut list_iter = ItemDataSlice(record_encoded.bytes())
             .list_iter()
             .map_err(Error::RlpDecodingError)?;
         let signature_data: Vec<u8> = list_iter.next_item().map_err(Error::RlpDecodingError)?;

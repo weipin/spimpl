@@ -11,20 +11,20 @@ use crate::types::RequestId;
 use super::{Message, Type};
 
 #[derive(Debug, PartialEq)]
-pub struct Nodes {
-    pub request_id: RequestId,
+pub struct Nodes<'a> {
+    pub request_id: RequestId<'a>,
     pub total: u64,
-    pub records: Vec<RecordRlpEncoded>,
+    pub records: Vec<RecordRlpEncoded<'a>>,
 }
 
-impl Message for Nodes {
+impl<'a> Message<'a> for Nodes<'a> {
     const TYPE: Type = Type::Nodes;
 }
 
 // Implements the trait `rlp::Encode` manually instead of leveraging
 // `#[derive(rlp::Encode)]`, to handle the exception of `RecordRlpEncoded` --
 // encoding the bytes as it is (rlp data).
-impl rlp::Encode for Nodes {
+impl rlp::Encode for Nodes<'_> {
     fn encode_to(&self, output: &mut Vec<u8>) {
         let mut payload = vec![];
         rlp::encode_to(&self.request_id, &mut payload);
@@ -44,12 +44,12 @@ impl rlp::Encode for Nodes {
 // Implements the trait `rlp::Decode` manually instead of leveraging
 // `#[derive(rlp::Decode)]`, to handle the exception of `RecordRlpEncoded` --
 // decoding the bytes as it is (rlp data).
-impl<'a> rlp::Decode<'a> for Nodes {
+impl<'a> rlp::Decode<'a> for Nodes<'a> {
     const TYPE: rlp::ItemType = rlp::ItemType::List;
 
     fn decode(payload: rlp::ItemPayloadSlice<'a>) -> Result<Self, rlp::Error> {
         let mut list_iter = payload.list_iter_unchecked();
-        let request_id: RequestId = list_iter.next_item()?;
+        let request_id: RequestId<'a> = list_iter.next_item()?;
         let total: u64 = list_iter.next_item()?;
 
         // let (item_type, item_payload) = (list_iter
@@ -72,7 +72,7 @@ impl<'a> rlp::Decode<'a> for Nodes {
                     }
 
                     // Decodes as it is
-                    let record = RecordRlpEncoded::from_vec(item_data.0.to_vec()).map_err(|e| {
+                    let record = RecordRlpEncoded::from_slice(item_data.0).map_err(|e| {
                         if e == enr::Error::MaximumRecordRlpEncodedByteLengthExceeded {
                             rlp::Error::ItemPayloadByteLengthTooLarge
                         } else {

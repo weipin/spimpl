@@ -11,7 +11,7 @@ use base64::Engine;
 use crate::constants::{MAX_BASE64_ENCODED_BYTE_LENGTH, MAX_RLP_ENCODED_BYTE_LENGTH};
 use crate::{Error, RecordRlpEncoded};
 
-impl RecordRlpEncoded {
+impl RecordRlpEncoded<'_> {
     /// Encodes a `RecordRlpEncoded` to its base64 from.
     pub(crate) fn to_base64(&self) -> Vec<u8> {
         let mut output = vec![0; MAX_BASE64_ENCODED_BYTE_LENGTH];

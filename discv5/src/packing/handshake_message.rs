@@ -16,7 +16,7 @@ use crate::types::Nonce;
 use super::error::Error;
 
 #[allow(clippy::too_many_arguments)]
-pub fn pack<T: Message, S: Scheme>(
+pub fn pack<'a, T: Message<'a>, S: Scheme>(
     message: &T,
     nonce: &Nonce,
     src_id: &NodeId,
@@ -51,7 +51,7 @@ pub fn pack<T: Message, S: Scheme>(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn pack_with_record<T: Message, S: Scheme>(
+pub fn pack_with_record<'a, T: Message<'a>, S: Scheme>(
     message: &T,
     nonce: &Nonce,
     src_id: &NodeId,
@@ -100,7 +100,7 @@ fn build_header<S: Scheme>(
     output.extend(nonce.bytes());
     output.extend(size_of_handshake_message_authdata_fixed_part::<S>().to_be_bytes());
 
-    output.extend(src_id.0);
+    output.extend(src_id.bytes());
     output.push(u8::try_from(S::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH).unwrap());
     output.push(u8::try_from(S::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH).unwrap());
     output.extend(id_signature);
@@ -127,7 +127,7 @@ fn build_header_with_record<S: Scheme>(
         .unwrap();
     output.extend(auth_data_size.to_be_bytes());
 
-    output.extend(src_id.0);
+    output.extend(src_id.bytes());
     output.push(u8::try_from(S::ENR_REQUIRED_SIGNATURE_BYTE_LENGTH).unwrap());
     output.push(u8::try_from(S::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH).unwrap());
     output.extend(id_signature);
@@ -162,11 +162,11 @@ mod tests {
         // discv5_id_signature: `ping_handshake_example_id_nonce_signing_without_extra_entropy`
         let id_signature_data = hex!("c0a04b36f276172afc66a62848eb0769800c670c4edbefab8f26785e7fda6b56506a3f27ca72a75b106edd392a2cbf8a69272f5c1785c36d1de9d98a0894b2db");
 
-        let src_id = NodeId(src_id_data);
-        let dest_id = NodeId(dest_id_data);
-        let nonce = Nonce::from_bytes(nonce_data);
-        let masking_iv = MaskingIv::from_bytes(masking_iv_data);
-        let request_id = RequestId::from_vec(request_id_data.to_vec()).unwrap();
+        let src_id = NodeId::from_slice(&src_id_data);
+        let dest_id = NodeId::from_slice(&dest_id_data);
+        let nonce = Nonce::from_slice(&nonce_data);
+        let masking_iv = MaskingIv::from_slice(&masking_iv_data);
+        let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {
             request_id,
             enr_seq,
@@ -212,11 +212,11 @@ mod tests {
         // discv5_id_signature: `ping_handshake_with_record_example_id_nonce_signing_without_extra_entropy`
         let id_signature_data = hex!("a439e69918e3f53f555d8ca4838fbe8abeab56aa55b056a2ac4d49c157ee719240a93f56c9fccfe7742722a92b3f2dfa27a5452f5aca8adeeab8c4d5d87df555");
 
-        let src_id = NodeId(src_id_data);
-        let dest_id = NodeId(dest_id_data);
-        let nonce = Nonce::from_bytes(nonce_data);
-        let masking_iv = MaskingIv::from_bytes(masking_iv_data);
-        let request_id = RequestId::from_vec(request_id_data.to_vec()).unwrap();
+        let src_id = NodeId::from_slice(&src_id_data);
+        let dest_id = NodeId::from_slice(&dest_id_data);
+        let nonce = Nonce::from_slice(&nonce_data);
+        let masking_iv = MaskingIv::from_slice(&masking_iv_data);
+        let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {
             request_id,
             enr_seq,
@@ -224,8 +224,7 @@ mod tests {
 
         // eth_enr_v4: `discv5_example_record_without_extra_entropy`
         let record_rlp_encoded_data = hex!("f87db84017e1b073918da32d640642c762c0e2781698e4971f8ab39a77746adad83f01e76ffc874c5924808bbe7c50890882c2b8a01287a0b08312d1d53a17d517f5eb2701826964827634826970847f00000189736563703235366b31a10313d14211e0287b2361a1615890a9b5212080546d0a257ae4cff96cf534992cb9");
-        let record_rlp_encoded =
-            RecordRlpEncoded::from_vec(record_rlp_encoded_data.to_vec()).unwrap();
+        let record_rlp_encoded = RecordRlpEncoded::from_slice(&record_rlp_encoded_data).unwrap();
 
         let packed = pack_with_record::<_, Schemev4>(
             &ping,

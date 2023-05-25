@@ -20,7 +20,7 @@ pub(crate) fn pack_header(
     output: &mut Vec<u8>,
 ) {
     aesctr::encrypt(
-        dest_id.0[..16].try_into().unwrap(),
+        dest_id.bytes()[..16].try_into().unwrap(),
         masking_iv.bytes(),
         header_in_out,
     );
@@ -28,7 +28,7 @@ pub(crate) fn pack_header(
     output.extend(header_in_out.as_ref());
 }
 
-pub(crate) fn pack_message<T: Message>(
+pub(crate) fn pack_message<'a, T: Message<'a>>(
     initiator_key: &[u8; 16],
     nonce: &Nonce,
     masking_iv: &MaskingIv,

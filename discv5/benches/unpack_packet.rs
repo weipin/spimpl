@@ -49,7 +49,7 @@ const EXAMPLE_PING_HANDSHAKE_WITH_ENR_PACKET: &[u8] = &hex!(
 fn unpack_packet(c: &mut Criterion) {
     let dest_node_id_data =
         hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
-    let dest_node_id = NodeId(dest_node_id_data);
+    let dest_node_id = NodeId::from_slice(&dest_node_id_data);
     let read_key = hex!("00000000000000000000000000000000");
     let read_key_handshake = hex!("4f9fac6de7567d1e3b1241dffe90f662");
     let read_key_handshake_enr = hex!("53b1c075f41876423154e157470c2f48");
@@ -73,10 +73,10 @@ fn unpack_packet(c: &mut Criterion) {
 
     c.bench_function("unpack_whoareyou_packet", |b| {
         b.iter(|| {
-            let (_, _, _, static_header, auth_data, _) =
+            let (_, _, _, _, auth_data, encrypted_message_data) =
                 unpack(&dest_node_id, EXAMPLE_WHOAREYOU_PACKET_DATA).unwrap();
 
-            let (_, _) = unpack_whoareyou(&static_header, &auth_data).unwrap();
+            let (_, _) = unpack_whoareyou(&auth_data, encrypted_message_data).unwrap();
         })
     });
 

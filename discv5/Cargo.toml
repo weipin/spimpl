@@ -21,7 +21,7 @@ thiserror = "1.0.40"
 hex = "0.4.3"
 hex-literal = "0.4.1"
 sigp_discv5 = { version = "0.2.2", package = "discv5" }
-criterion = "0.4.0"
+criterion = "0.5.0"
 
 [[bench]]
 name = "unpack_packet"

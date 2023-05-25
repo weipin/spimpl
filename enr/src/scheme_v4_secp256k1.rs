@@ -99,7 +99,7 @@ impl Scheme for Schemev4Secp256k1 {
 
     fn new_node_id(public_key: &Self::PublicKey) -> NodeId {
         let uncompressed = &public_key.serialize_uncompressed()[1..];
-        NodeId(Keccak256::digest(uncompressed).into())
+        NodeId::from_array(Keccak256::digest(uncompressed).into())
     }
 
     fn ecdh(point: &Self::PublicKey, scalar: &Self::PrivateKey) -> Vec<u8> {

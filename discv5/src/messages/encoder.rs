@@ -6,12 +6,12 @@
 
 use super::Message;
 
-pub fn encode_to<T: Message>(value: &T, output: &mut Vec<u8>) {
+pub fn encode_to<'a, T: Message<'a>>(value: &T, output: &mut Vec<u8>) {
     output.push(<T as Message>::TYPE.value());
     rlp::encode_to(value, output);
 }
 
-pub fn encode<T: Message>(value: &T) -> Vec<u8> {
+pub fn encode<'a, T: Message<'a>>(value: &T) -> Vec<u8> {
     let mut output = vec![];
     encode_to(value, &mut output);
     output

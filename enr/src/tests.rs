@@ -428,7 +428,7 @@ mod tests {
         let node_id = Schemev4::new_node_id(&public_key);
 
         assert_eq!(
-            hex::encode(node_id.0),
+            hex::encode(node_id.bytes()),
             "a448f24c6d18e575453db13171562b71999873db5b286df957af199ec94617f7"
         );
     }

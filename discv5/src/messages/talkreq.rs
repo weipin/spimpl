@@ -4,18 +4,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::borrow::Cow;
+
 use crate::types::RequestId;
 
 use super::{Message, Type};
 
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
-pub struct TalkReq {
-    pub request_id: RequestId,
-    pub protocol: Vec<u8>,
-    pub request: Vec<u8>,
+pub struct TalkReq<'a> {
+    pub request_id: RequestId<'a>,
+    pub protocol: Cow<'a, [u8]>,
+    pub request: Cow<'a, [u8]>,
 }
 
-impl Message for TalkReq {
+impl<'a> Message<'a> for TalkReq<'a> {
     const TYPE: Type = Type::TalkReq;
 }
 
@@ -30,8 +32,8 @@ mod tests {
         let request_id_vec = vec![1, 2, 3, 4, 5, 6, 7, 8];
         let talkreq = TalkReq {
             request_id: RequestId::from_vec(request_id_vec).unwrap(),
-            protocol: vec![1, 2, 3],
-            request: vec![4, 5, 6],
+            protocol: vec![1, 2, 3].into(),
+            request: vec![4, 5, 6].into(),
         };
 
         let encoded = messages::encode(&talkreq);

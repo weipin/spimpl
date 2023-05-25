@@ -20,7 +20,7 @@ hex-literal = "0.4.1"
 serde_json = "1.0.96"
 rlp_types = { path = "../rlp_types" }
 sigp_enr = { version = "0.8.1", package = "enr" }
-criterion = "0.4.0"
+criterion = "0.5.0"
 
 [[bench]]
 name = "record_from_address"

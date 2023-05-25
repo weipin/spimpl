@@ -239,6 +239,17 @@ def invalid_eph_pubkey_longer():
                                                ID_SIGNATURE, eph_pubkey, RECORD_RLP_ENCODED)
 
 
+# invalid record
+def invalid_record():
+    # eth_enr_v4.py: `ip4_overflow`
+    record_rlp_encoded = bytes.fromhex(
+        'f851b84093986c7dc257c673643605a99cc5479caabd39d573895539da5c4a0161585afe507329f55375b57c2d2d58566cf67653679e089a75f86659a134b21562af5d42018269648276348375647083010000')
+    return _pack_handshake_message_with_record(NONCE, SRC_NODE_ID, DEST_NODE_ID,
+                                               MASKING_IV, INITIATOR_KEY, MESSAGE_TYPE,
+                                               MESSAGE_RLP_ENCODED,
+                                               ID_SIGNATURE, EPH_PUBKEY, record_rlp_encoded)
+
+
 # invalid flag
 def invalid_flag_unexpected_value():
     flag = bytes([77])

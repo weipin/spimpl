@@ -15,7 +15,7 @@ use crate::types::Nonce;
 use super::common::{pack_header, pack_message};
 use super::error::Error;
 
-pub fn pack<T: Message>(
+pub fn pack<'a, T: Message<'a>>(
     message: &T,
     nonce: &Nonce,
     src_node_id: &NodeId,
@@ -52,7 +52,7 @@ fn build_header(nonce: &Nonce, src_node_id: &NodeId) -> Vec<u8> {
     output.push(Flag::OrdinaryMessage.value());
     output.extend(nonce.bytes());
     output.extend(ORDINARY_MESSAGE_AUTHDATA_SIZE_BYTES);
-    output.extend(src_node_id.0);
+    output.extend(src_node_id.bytes());
 
     output
 }
@@ -61,10 +61,12 @@ fn build_header(nonce: &Nonce, src_node_id: &NodeId) -> Vec<u8> {
 mod tests {
     use std::mem::size_of;
 
+    use enr::NodeIdType;
     use hex_literal::hex;
 
     use crate::messages::{self, Ping, Type};
     use crate::packet::constants::{MAX_PACKET_BYTE_LENGTH, STATIC_HEADER_BYTE_LENGTH};
+    use crate::packet::MaskingIvType;
     use crate::types::RequestId;
 
     use super::*;
@@ -81,11 +83,11 @@ mod tests {
         let request_id_data = hex!("00000001");
         let enr_seq = 2;
 
-        let src_node_id = NodeId(src_node_id_data);
-        let dest_node_id = NodeId(dest_node_id_data);
-        let nonce = Nonce::from_bytes(nonce_data);
-        let masking_iv = MaskingIv::from_bytes(masking_iv_data);
-        let request_id = RequestId::from_vec(request_id_data.to_vec()).unwrap();
+        let src_node_id = NodeId::from_slice(&src_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
+        let nonce = Nonce::from_slice(&nonce_data);
+        let masking_iv = MaskingIv::from_slice(&masking_iv_data);
+        let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {
             request_id,
             enr_seq,
@@ -113,9 +115,9 @@ mod tests {
     #[test]
     fn test_max_packet_byte_length() {
         const MAX_ENCODED_MESSAGE_BYTE_LENGTH: usize = MAX_PACKET_BYTE_LENGTH
-            - size_of::<MaskingIv>()
+            - size_of::<MaskingIvType>()
             - STATIC_HEADER_BYTE_LENGTH
-            - size_of::<NodeId>()
+            - size_of::<NodeIdType>()
             - TAG_BYTE_LENGTH;
         const CONTENT_BYTE_LEN: usize = 1186;
         let echo = Echo {
@@ -132,10 +134,10 @@ mod tests {
         let initiator_key = hex!("00000000000000000000000000000000");
         let masking_iv_data = hex!("00000000000000000000000000000000");
 
-        let src_node_id = NodeId(src_node_id_data);
-        let dest_node_id = NodeId(dest_node_id_data);
-        let nonce = Nonce::from_bytes(nonce_data);
-        let masking_iv = MaskingIv::from_bytes(masking_iv_data);
+        let src_node_id = NodeId::from_slice(&src_node_id_data);
+        let dest_node_id = NodeId::from_slice(&dest_node_id_data);
+        let nonce = Nonce::from_slice(&nonce_data);
+        let masking_iv = MaskingIv::from_slice(&masking_iv_data);
 
         let packed = pack(
             &echo,
@@ -173,7 +175,7 @@ mod tests {
         content: Vec<u8>,
     }
 
-    impl Message for Echo {
+    impl<'a> Message<'a> for Echo {
         const TYPE: Type = Type::Ping;
     }
 }
