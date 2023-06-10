@@ -12,7 +12,7 @@
 use crate::scheme_v4::MockOsRng as OsRng;
 #[cfg(not(test))]
 use rand::rngs::OsRng;
-use rand::RngCore;
+use rand::{CryptoRng, Rng, RngCore};
 use secp256k1::{ecdsa, Message, SECP256K1};
 use sha3::{Digest, Keccak256};
 
@@ -54,6 +54,12 @@ impl Scheme for Schemev4Secp256k1 {
         let bytes = public_key.serialize().to_vec();
         debug_assert_eq!(bytes.len(), Self::ENR_REQUIRED_PUBLIC_KEY_BYTE_LENGTH);
         bytes
+    }
+
+    fn new_private_key<R: Rng + CryptoRng + ?Sized>(
+        csprng: &mut R,
+    ) -> Result<Self::PrivateKey, Self::Error> {
+        Ok(secp256k1::SecretKey::new(csprng))
     }
 
     fn new_private_key_from_bytes(bytes: &[u8]) -> Result<Self::PrivateKey, Self::Error> {

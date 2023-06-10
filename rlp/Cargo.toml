@@ -20,7 +20,7 @@ serde_json = "1.0.96"
 hex = "0.4.3"
 rlp_types = { path = "../rlp_types" }
 num-bigint = "0.4.3"
-criterion = "0.5.0"
+criterion = "0.5.1"
 
 [[bench]]
 name = "encode"

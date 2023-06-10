@@ -29,6 +29,8 @@
 use core::fmt::Debug;
 use std::fmt::Display;
 
+use rand::{CryptoRng, Rng};
+
 use crate::NodeId;
 
 /// The trait for "identity scheme".
@@ -65,6 +67,11 @@ pub trait Scheme {
 
     /// Creates a `Self::PrivateKey` from `bytes`.
     fn new_private_key_from_bytes(bytes: &[u8]) -> Result<Self::PrivateKey, Self::Error>;
+
+    /// Creates a `Self::PrivateKey` from a cryptographically secure generator.
+    fn new_private_key<R: Rng + CryptoRng + ?Sized>(
+        csprng: &mut R,
+    ) -> Result<Self::PrivateKey, Self::Error>;
 
     /// Creates a `Self::Signature` from `bytes`.
     fn new_signature_from_bytes(bytes: &[u8]) -> Result<Self::Signature, Self::Error>;

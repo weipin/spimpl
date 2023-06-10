@@ -40,13 +40,28 @@ impl PublishableRecord {
     /// The sequence number increases by 1 if the record content has any change
     /// since its creation or the previous `publish` call.
     ///
+    /// `private_key` must be the same key used to construct the original
+    /// immutable record.
+    ///
     /// This method always performs a RLP encoding operation upon the content.
     /// If you are certain that the content doesn't change since the last
     /// publishing, consider caching the previously returned values.
+    ///
+    /// # Panics
+    ///
+    /// Will panic in debug mode if the public key of `private_key` doesn't
+    /// match the existing one stored in the content. Will return an invalid
+    /// record in release mode.
     pub fn publish<S: Scheme>(
         &mut self,
         private_key: &S::PrivateKey,
     ) -> Result<(SequenceNumber, String), Error> {
+        debug_assert!(self.content.public_key_data.is_some());
+        debug_assert_eq!(
+            &S::public_key_to_bytes(&S::new_public_key_from_private_key(private_key)),
+            self.content.public_key_data.as_ref().unwrap()
+        );
+
         let encoded = self.content.to_rlp_encoded::<S>();
         if encoded != self.content_encoded {
             self.content.seq = self.content.seq.checked_add(1).ok_or(Error::SeqOverflow)?;

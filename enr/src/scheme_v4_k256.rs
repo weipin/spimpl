@@ -56,6 +56,12 @@ impl Scheme for Schemev4K256 {
         bytes
     }
 
+    fn new_private_key<R: Rng + CryptoRng + ?Sized>(
+        csprng: &mut R,
+    ) -> Result<Self::PrivateKey, Self::Error> {
+        unimplemented!()
+    }
+
     fn new_private_key_from_bytes(bytes: &[u8]) -> Result<Self::PrivateKey, Self::Error> {
         ecdsa::SigningKey::from_slice(bytes)
     }

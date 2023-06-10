@@ -9,6 +9,7 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr};
 
     use hex_literal::hex;
+    use rand::rngs::OsRng;
 
     use crate::constants::SEQUENCE_NUMBER_INITIAL;
     use crate::{
@@ -227,6 +228,22 @@ mod tests {
             .publish::<Schemev4>(&private_key)
             .unwrap_err();
         assert_eq!(err, Error::SeqOverflow);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_publishable_publish_with_different_private_key() {
+        let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
+        let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
+        let mut publishable_record = Builder::new::<Schemev4>()
+            .with_seq(SequenceNumber::MAX)
+            .sign_and_build::<Schemev4>(&scheme_keypair)
+            .unwrap()
+            .to_publishable::<Schemev4>();
+        let private_key2 = Schemev4::new_private_key(&mut OsRng).unwrap();
+        publishable_record
+            .publish::<Schemev4>(&private_key2)
+            .unwrap();
     }
 
     #[test]
