@@ -27,6 +27,18 @@ jobs:
         os: [macos-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
+      - name: Build and install static dispatch from source
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install cmake ninja-build clang systemtap-sdt-dev libbsd-dev linux-libc-dev
+          git clone https://github.com/apple/swift-corelibs-libdispatch.git
+          mkdir build && cd build
+          cmake -DBUILD_SHARED_LIBS=OFF -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ../swift-corelibs-libdispatch
+          ninja -v
+          sudo ninja -v install
       - name: Build
         run: cargo build --verbose
       - name: Clippy
