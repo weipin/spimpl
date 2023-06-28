@@ -8,4 +8,5 @@ members = [
   "rlp_derive",
   "rlp_types",
   "dispatch-sys",
+  "dispatch",
 ]

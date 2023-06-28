@@ -40,7 +40,7 @@ impl PublishableRecord {
     /// The sequence number increases by 1 if the record content has any change
     /// since its creation or the previous `publish` call.
     ///
-    /// `private_key` must be the same key used to construct the original
+    /// `private_key` must be the same key that constructed the original
     /// immutable record.
     ///
     /// This method always performs a RLP encoding operation upon the content.

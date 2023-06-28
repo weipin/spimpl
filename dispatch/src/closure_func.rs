@@ -4,14 +4,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#![allow(non_camel_case_types)]
+pub(crate) extern "C" fn invoke_closure<F>(context: &mut &mut F)
+where
+    F: FnMut(),
+{
+    context()
+}
 
-mod group;
-mod object;
-mod qos;
-mod queue;
-
-pub use group::*;
-pub use object::*;
-pub use qos::*;
-pub use queue::*;
+pub(crate) extern "C" fn invoke_boxed_closure<F>(context: Box<F>)
+where
+    F: 'static + FnOnce(),
+{
+    (*context)();
+}

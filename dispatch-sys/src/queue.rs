@@ -4,10 +4,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use crate::dispatch_qos_class_t;
+
 extern "C" {
     pub fn dispatch_queue_create(
         label: *const ::std::os::raw::c_char,
         attr: dispatch_queue_attr_t,
+    ) -> dispatch_queue_t;
+
+    pub fn dispatch_queue_create_with_target(
+        label: *const ::std::os::raw::c_char,
+        attr: dispatch_queue_attr_t,
+        target: dispatch_queue_t,
     ) -> dispatch_queue_t;
 
     pub fn dispatch_sync_f(
@@ -15,6 +23,22 @@ extern "C" {
         context: *mut ::std::os::raw::c_void,
         work: dispatch_function_t,
     );
+
+    pub fn dispatch_async_f(
+        queue: dispatch_queue_t,
+        context: *mut ::std::os::raw::c_void,
+        work: dispatch_function_t,
+    );
+
+    pub fn dispatch_queue_attr_make_with_qos_class(
+        attr: dispatch_queue_attr_t,
+        qos_class: dispatch_qos_class_t,
+        relative_priority: ::std::os::raw::c_int,
+    ) -> dispatch_queue_attr_t;
+
+    pub fn dispatch_queue_attr_make_initially_inactive(
+        attr: dispatch_queue_attr_t,
+    ) -> dispatch_queue_attr_t;
 }
 
 #[repr(C)]
@@ -23,7 +47,12 @@ pub struct dispatch_queue_s {
     pub _address: u8,
 }
 
+extern "C" {
+    pub static mut _dispatch_queue_attr_concurrent: dispatch_queue_attr_s;
+}
+
 pub type dispatch_queue_t = *mut dispatch_queue_s;
+pub type dispatch_queue_serial_t = dispatch_queue_t;
 
 pub type dispatch_queue_attr_t = *mut dispatch_queue_attr_s;
 
