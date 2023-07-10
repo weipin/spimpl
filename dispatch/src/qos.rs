@@ -22,6 +22,18 @@ pub enum Qos {
 }
 
 impl Qos {
+    pub(crate) fn new(qos_class: dispatch_qos_class_t) -> Self {
+        match qos_class {
+            QOS_CLASS_USER_INTERACTIVE => Self::UserInteractive,
+            QOS_CLASS_USER_INITIATED => Self::UserInitiated,
+            QOS_CLASS_DEFAULT => Self::Default,
+            QOS_CLASS_UTILITY => Self::Utility,
+            QOS_CLASS_BACKGROUND => Self::Background,
+            QOS_CLASS_UNSPECIFIED => Self::Unspecified,
+            _ => panic!("unexpected qos class"),
+        }
+    }
+
     pub(crate) fn to_sys(&self) -> dispatch_qos_class_t {
         match self {
             Self::UserInteractive => QOS_CLASS_USER_INTERACTIVE,

@@ -4,6 +4,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use crate::dispatch_queue_t;
+
+extern "C" {
+    pub fn dispatch_queue_get_qos_class(
+        queue: dispatch_queue_t,
+        relative_priority_ptr: *mut ::std::os::raw::c_int,
+    ) -> dispatch_qos_class_t;
+}
+
 pub const QOS_CLASS_USER_INTERACTIVE: _bindgen_ty_2 = 33;
 pub const QOS_CLASS_USER_INITIATED: _bindgen_ty_2 = 25;
 pub const QOS_CLASS_DEFAULT: _bindgen_ty_2 = 21;

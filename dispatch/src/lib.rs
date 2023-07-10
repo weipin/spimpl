@@ -10,9 +10,17 @@ mod qos;
 mod queue;
 mod queue_attr;
 mod queue_config;
+mod source;
+mod source_file;
+mod source_timer;
+mod time;
 
 pub use group::*;
 pub use qos::*;
 pub use queue::*;
 pub use queue_attr::*;
 pub use queue_config::*;
+pub use source::*;
+pub use source_file::*;
+pub use source_timer::*;
+pub use time::*;

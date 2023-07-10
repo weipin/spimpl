@@ -4,12 +4,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use std::ffi::CString;
+use std::ffi::{c_int, c_void, CString};
 use std::mem;
 
 use dispatch_sys::{
-    dispatch_async_f, dispatch_queue_attr_make_with_qos_class, dispatch_queue_create,
-    dispatch_queue_create_with_target, dispatch_queue_t, dispatch_release, dispatch_sync_f,
+    dispatch_async_f, dispatch_object_t, dispatch_queue_attr_make_with_qos_class,
+    dispatch_queue_create, dispatch_queue_create_with_target, dispatch_queue_get_qos_class,
+    dispatch_queue_t, dispatch_release, dispatch_sync_f,
 };
 
 use crate::closure_func::{invoke_boxed_closure, invoke_closure};
@@ -39,19 +40,22 @@ impl Queue {
         Queue(queue)
     }
 
+    pub fn get_qos(&self) -> Qos {
+        let rel_pri: c_int = 0;
+        let qos_class =
+            unsafe { dispatch_queue_get_qos_class(self.0, &rel_pri as *const c_int as *mut c_int) };
+        Qos::new(qos_class)
+    }
+
     pub fn dispatch_async<F>(&self, work: F)
     where
         F: 'static + FnOnce(),
     {
-        let (context, func) = unsafe {
-            (
-                mem::transmute(Box::new(work)),
-                mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)),
-            )
-        };
+        let context = Box::into_raw(Box::new(work));
+        let func = unsafe { mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)) };
 
         unsafe {
-            dispatch_async_f(self.0, context, func);
+            dispatch_async_f(self.0, context as *mut c_void, func);
         }
     }
 
@@ -59,16 +63,12 @@ impl Queue {
     where
         F: FnMut(),
     {
-        let (context, func) = unsafe {
-            (
-                // `&&`: reference to fat pointer
-                mem::transmute(&&work),
-                mem::transmute(invoke_closure::<F> as extern "C" fn(_)),
-            )
-        };
+        // `&&`: reference to fat pointer
+        let context = &&work;
+        let func = unsafe { mem::transmute(invoke_closure::<F> as extern "C" fn(_)) };
 
         unsafe {
-            dispatch_sync_f(self.0, context, func);
+            dispatch_sync_f(self.0, context as *const _ as *mut c_void, func);
         }
     }
 }
@@ -76,7 +76,7 @@ impl Queue {
 impl Drop for Queue {
     fn drop(&mut self) {
         unsafe {
-            dispatch_release(dispatch_sys::dispatch_object_t { _dq: self.0 });
+            dispatch_release(dispatch_object_t { _dq: self.0 });
         }
     }
 }
@@ -89,6 +89,21 @@ mod tests {
     use std::thread;
 
     use super::*;
+
+    #[test]
+    fn test_set_qos() {
+        let queue = Queue::new("", &QueueConfig::default());
+        assert_eq!(queue.get_qos(), Qos::Unspecified);
+
+        let queue = Queue::new(
+            "",
+            &QueueConfig {
+                qos: Qos::Background,
+                ..Default::default()
+            },
+        );
+        assert_eq!(queue.get_qos(), Qos::Background);
+    }
 
     #[test]
     fn test_dispatch_async() {

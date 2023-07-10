@@ -4,6 +4,7 @@ members = [
   "discv5",
   "enr",
   "extensions",
+  "test_extensions",
   "rlp",
   "rlp_derive",
   "rlp_types",

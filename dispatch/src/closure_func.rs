@@ -11,9 +11,10 @@ where
     context()
 }
 
-pub(crate) extern "C" fn invoke_boxed_closure<F>(context: Box<F>)
+pub(crate) extern "C" fn invoke_boxed_closure<F>(context: *mut F)
 where
     F: 'static + FnOnce(),
 {
-    (*context)();
+    let f = unsafe { Box::from_raw(context) };
+    (f)();
 }

@@ -4,11 +4,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::ffi::c_void;
 use std::mem;
 
 use dispatch_sys::{
     dispatch_group_async_f, dispatch_group_create, dispatch_group_notify_f, dispatch_group_t,
-    dispatch_release,
+    dispatch_object_t, dispatch_release,
 };
 
 use crate::closure_func::invoke_boxed_closure;
@@ -25,15 +26,11 @@ impl Group {
     where
         F: 'static + FnOnce(),
     {
-        let (context, func) = unsafe {
-            (
-                mem::transmute(Box::new(work)),
-                mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)),
-            )
-        };
+        let context = Box::into_raw(Box::new(work));
+        let func = unsafe { mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)) };
 
         unsafe {
-            dispatch_group_notify_f(self.0, queue.0, context, func);
+            dispatch_group_notify_f(self.0, queue.0, context as *mut c_void, func);
         }
     }
 }
@@ -41,7 +38,7 @@ impl Group {
 impl Drop for Group {
     fn drop(&mut self) {
         unsafe {
-            dispatch_release(dispatch_sys::dispatch_object_t { _dg: self.0 });
+            dispatch_release(dispatch_object_t { _dg: self.0 });
         }
     }
 }
@@ -57,15 +54,11 @@ impl Queue {
     where
         F: 'static + FnOnce(),
     {
-        let (context, func) = unsafe {
-            (
-                mem::transmute(Box::new(work)),
-                mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)),
-            )
-        };
+        let context = Box::into_raw(Box::new(work));
+        let func = unsafe { mem::transmute(invoke_boxed_closure::<F> as extern "C" fn(_)) };
 
         unsafe {
-            dispatch_group_async_f(group.0, self.0, context, func);
+            dispatch_group_async_f(group.0, self.0, context as *mut c_void, func);
         }
     }
 }

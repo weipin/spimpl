@@ -4,14 +4,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::types::{Log2Distance, RequestId};
+use crate::types::{NodeProtocolDistance, RequestId};
 
 use super::{Message, Type};
 
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
 pub struct FindNode<'a> {
     pub request_id: RequestId<'a>,
-    pub distances: Vec<Log2Distance>,
+    pub distances: Vec<NodeProtocolDistance>,
 }
 
 impl<'a> Message<'a> for FindNode<'a> {
@@ -30,7 +30,11 @@ mod tests {
         let request_id = RequestId::from_vec(request_id_vec).unwrap();
         let findnode = FindNode {
             request_id,
-            distances: vec![Log2Distance(1), Log2Distance(2), Log2Distance(3)],
+            distances: vec![
+                NodeProtocolDistance(1),
+                NodeProtocolDistance(2),
+                NodeProtocolDistance(3),
+            ],
         };
 
         let encoded = messages::encode(&findnode);
