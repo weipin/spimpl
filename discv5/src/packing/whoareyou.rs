@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use enr::{NodeId, SequenceNumber};
+use enr::{NodeId, SeqNum};
 
 use crate::packet::constants::{
     MIN_PACKET_BYTE_LENGTH, PROTOCOL_ID, VERSION, WHOAREYOU_AUTHDATA_SIZE_BYTES,
@@ -20,7 +20,7 @@ pub fn pack(
     dest_node_id: &NodeId,
     masking_iv: &MaskingIv,
     id_nonce: &IdNonce,
-    enr_seq: SequenceNumber,
+    enr_seq: SeqNum,
 ) -> Vec<u8> {
     let mut header_pt_in_ct_out = build_header(nonce, id_nonce, enr_seq);
 
@@ -36,7 +36,7 @@ pub fn pack(
     output
 }
 
-fn build_header(nonce: &Nonce, id_nonce: &IdNonce, enr_seq: SequenceNumber) -> Vec<u8> {
+fn build_header(nonce: &Nonce, id_nonce: &IdNonce, enr_seq: SeqNum) -> Vec<u8> {
     let mut output = vec![];
 
     output.extend(PROTOCOL_ID);
@@ -65,7 +65,7 @@ mod tests {
             hex!("bbbb9d047f0488c0b5a93c1c3f2d8bafc7c8ff337024a55434a0d0555de64db9");
         let masking_iv_data = hex!("00000000000000000000000000000000");
 
-        let nonce = Nonce::from_slice(&nonce_data);
+        let nonce = Nonce::from_array(nonce_data);
         let id_nonce = IdNonce::from_slice(&id_nonce_data);
         let dest_node_id = NodeId::from_slice(&dest_node_id_data);
         let masking_iv = MaskingIv::from_slice(&masking_iv_data);

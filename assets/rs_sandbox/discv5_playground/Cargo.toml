@@ -8,6 +8,5 @@ edition = "2021"
 
 [dependencies]
 hex-literal = "0.4.1"
-discv5 = "0.2.2"
+discv5 = "0.3.1"
 hex = "0.4.3"
-

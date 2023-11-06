@@ -9,7 +9,7 @@
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 use crate::content::Content;
-use crate::{Error, Record, Scheme, SchemeKeyPair, SequenceNumber};
+use crate::{Error, Record, Scheme, SchemeKeyPair, SeqNum};
 
 /// Builder for `Content`.
 pub struct Builder(pub(crate) Content);
@@ -43,7 +43,7 @@ impl Builder {
     }
 
     /// Sets the sequence number `seq`.
-    pub fn with_seq(&mut self, seq: SequenceNumber) -> &mut Self {
+    pub fn with_seq(&mut self, seq: SeqNum) -> &mut Self {
         self.0.seq = seq;
         self
     }

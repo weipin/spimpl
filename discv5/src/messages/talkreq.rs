@@ -19,6 +19,8 @@ pub struct TalkReq<'a> {
 
 impl<'a> Message<'a> for TalkReq<'a> {
     const TYPE: Type = Type::TalkReq;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 4; // see test `min_data_byte_length`
 }
 
 #[cfg(test)]
@@ -44,5 +46,16 @@ mod tests {
         );
 
         assert_eq!(rlp::decode::<TalkReq>(&encoded[1..]).unwrap(), talkreq);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = TalkReq {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            protocol: vec![].into(),
+            request: vec![].into(),
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), TalkReq::MIN_DATA_BYTE_LENGTH);
     }
 }

@@ -6,7 +6,7 @@
 
 fn main() {
     // Tell cargo to tell rustc to link the system dispatch
-    #[cfg(target_os = "macos")]
+    #[cfg(target_vendor = "apple")]
     println!("cargo:rustc-link-lib=dylib=System");
 
     #[cfg(target_os = "linux")]

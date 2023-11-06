@@ -19,6 +19,8 @@ pub struct Nodes<'a> {
 
 impl<'a> Message<'a> for Nodes<'a> {
     const TYPE: Type = Type::Nodes;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 4; // see test `min_data_byte_length`
 }
 
 // Implements the trait `rlp::Encode` manually instead of leveraging
@@ -124,5 +126,16 @@ mod tests {
         assert_eq!(encoded, hex!("04f9010988010203040506070802f8fdf884b8407098ad865b00a582051940cb9cf36836572411a47278783077011599ed5cd16b76f2635f4e234738f30813a89eb9137e3e3df5266e3a1f11df72ecf1145ccb9c01826964827634826970847f00000189736563703235366b31a103ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd31388375647082765ff875b8405f70bb2c88b5f7a6430d80efb780c30b6cec546ef95f1fec52f220bd385c9579334349da2682728072cc2a3d6285560c3358fbf54c0151286f0ad32f07060f8c0182696482763489736563703235366b31a103ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138"));
 
         assert_eq!(rlp::decode::<Nodes>(&encoded[1..]).unwrap(), nodes);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = Nodes {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            total: 0,
+            records: vec![],
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), Nodes::MIN_DATA_BYTE_LENGTH);
     }
 }

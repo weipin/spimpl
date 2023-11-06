@@ -10,19 +10,14 @@ use aes_gcm::{AeadInPlace, Aes128Gcm, KeyInit};
 //  is AES-GCM encryption/authentication with the given key, nonce and additional
 //  authenticated data ad. Size of key is 16 bytes (AES-128), size of nonce 12 bytes.
 //
-// pt_in_ct_out.capacity() == pt.len() + TAG_BYTE_LENGTH
-pub(crate) fn encrypt(
-    key: &[u8; 16],
-    nonce: &[u8; 12],
-    ad: &[u8],
-    pt_in_ct_out: &mut Vec<u8>,
-) -> bool {
+pub(crate) fn encrypt(key: &[u8; 16], nonce: &[u8; 12], ad: &[u8], pt_in_ct_out: &mut Vec<u8>) {
     debug_assert!(!ad.is_empty());
+    // debug_assert_eq!(pt_in_ct_out.len(), pt_in.len() + TAG_BYTE_LENGTH);
 
     let cipher = Aes128Gcm::new_from_slice(key).unwrap();
     let nonce = aes_gcm::Nonce::from_slice(nonce);
 
-    cipher.encrypt_in_place(nonce, ad, pt_in_ct_out).is_ok()
+    cipher.encrypt_in_place(nonce, ad, pt_in_ct_out).unwrap()
 }
 
 pub(crate) fn decrypt(
@@ -38,6 +33,12 @@ pub(crate) fn decrypt(
 
     cipher.decrypt_in_place(nonce, ad, ct_in_pt_out).is_ok()
 }
+
+pub(crate) const fn ct_byte_length(pt_byte_length: usize) -> usize {
+    pt_byte_length + TAG_BYTE_LENGTH
+}
+
+pub(crate) const TAG_BYTE_LENGTH: usize = 16;
 
 #[cfg(test)]
 mod tests {
@@ -55,10 +56,30 @@ mod tests {
         let message_ciphertext = hex!("a5d12a2d94b8ccb3ba55558229867dc13bfa3648");
 
         let mut pt_in_ct_out = pt.to_vec();
-        assert!(encrypt(&encryption_key, &nonce, &ad, &mut pt_in_ct_out));
+        encrypt(&encryption_key, &nonce, &ad, &mut pt_in_ct_out);
         assert_eq!(pt_in_ct_out, &message_ciphertext);
 
         decrypt(&encryption_key, &nonce, &ad, &mut pt_in_ct_out);
         assert_eq!(pt_in_ct_out, pt);
+    }
+
+    #[test]
+    fn test_decrypt_err() {
+        let encryption_key = hex!("9f2d77db7004bf8a1a85107ac686990b");
+        let nonce = hex!("27b5af763c446acd2749fe8e");
+        let ad = hex!("93a7400fa0d6a694ebc24d5cf570f65d04215b6ac00757875e3f3a5f42107903");
+
+        let mut ct = vec![];
+        let result = decrypt(&encryption_key, &nonce, &ad, &mut ct);
+        assert!(!result);
+
+        let mut ct = vec![1, 2, 3];
+        let result = decrypt(&encryption_key, &nonce, &ad, &mut ct);
+        assert!(!result);
+
+        let message_ciphertext = hex!("ffffff2d94b8ccb3ba55558229867dc13bfa3648");
+        let mut ct = message_ciphertext.to_vec();
+        let result = decrypt(&encryption_key, &nonce, &ad, &mut ct);
+        assert!(!result);
     }
 }

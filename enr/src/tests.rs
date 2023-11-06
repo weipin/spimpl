@@ -13,7 +13,7 @@ mod tests {
 
     use crate::constants::SEQUENCE_NUMBER_INITIAL;
     use crate::{
-        Builder, Error, Record, Scheme, SchemeKeyPair, Schemev4, Schemev4Secp256k1, SequenceNumber,
+        Builder, Error, Record, Scheme, SchemeKeyPair, Schemev4, Schemev4Secp256k1, SeqNum,
     };
 
     // eth_enr: `example_record`
@@ -213,7 +213,7 @@ mod tests {
         let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
         let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
         let mut publishable_record = Builder::new::<Schemev4>()
-            .with_seq(SequenceNumber::MAX)
+            .with_seq(SeqNum::MAX)
             .sign_and_build::<Schemev4>(&scheme_keypair)
             .unwrap()
             .to_publishable::<Schemev4>();
@@ -221,7 +221,7 @@ mod tests {
         let (seq, _) = publishable_record
             .publish::<Schemev4>(&private_key)
             .unwrap();
-        assert_eq!(seq, SequenceNumber::MAX);
+        assert_eq!(seq, SeqNum::MAX);
 
         publishable_record.update_ip4(EXAMPLE_IP4);
         let err = publishable_record
@@ -236,7 +236,7 @@ mod tests {
         let private_key = Schemev4::new_private_key_from_bytes(PRIVATE_KEY_DATA).unwrap();
         let scheme_keypair = SchemeKeyPair::from_private_key(private_key);
         let mut publishable_record = Builder::new::<Schemev4>()
-            .with_seq(SequenceNumber::MAX)
+            .with_seq(SeqNum::MAX)
             .sign_and_build::<Schemev4>(&scheme_keypair)
             .unwrap()
             .to_publishable::<Schemev4>();
@@ -451,7 +451,7 @@ mod tests {
     }
 
     struct ContentData {
-        seq: SequenceNumber,
+        seq: SeqNum,
         ip4: Option<Ipv4Addr>,
         tcp4: Option<u16>,
         udp4: Option<u16>,

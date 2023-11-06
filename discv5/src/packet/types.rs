@@ -36,7 +36,9 @@ impl<'a> MaskingIv<'a> {
 }
 
 pub(crate) type AuthDataSize = u16;
+pub type AuthData = Vec<u8>;
 
+// id-nonce      = uint128   -- random bytes
 pub type IdNonceType = [u8; 16];
 
 #[derive(Debug)]

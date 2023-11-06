@@ -8,4 +8,5 @@ use super::Type;
 
 pub trait Message<'a>: rlp::Encode + rlp::Decode<'a> {
     const TYPE: Type;
+    const MIN_DATA_BYTE_LENGTH: usize;
 }

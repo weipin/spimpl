@@ -4,10 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::SequenceNumber;
+use crate::SeqNum;
 
 /// The default value of sequence number.
-pub(crate) const SEQUENCE_NUMBER_INITIAL: SequenceNumber = 1;
+pub(crate) const SEQUENCE_NUMBER_INITIAL: SeqNum = 1;
 
 /// The maximum encoded size in bytes of a node record.
 pub const MAX_RLP_ENCODED_BYTE_LENGTH: usize = 300;

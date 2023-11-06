@@ -6,7 +6,7 @@
 
 mod distance;
 mod nonce;
-mod request_id;
+pub(crate) mod request_id;
 
 pub use distance::*;
 pub use nonce::{Nonce, NonceType};

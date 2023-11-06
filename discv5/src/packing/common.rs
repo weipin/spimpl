@@ -13,6 +13,7 @@ use crate::types::Nonce;
 
 use super::error::Error;
 
+// output = masking-iv || masked-header
 pub(crate) fn pack_header(
     masking_iv: &MaskingIv,
     dest_id: &NodeId,
@@ -37,7 +38,6 @@ pub(crate) fn pack_message<'a, T: Message<'a>>(
     output: &mut Vec<u8>,
 ) -> Result<(), Error> {
     let mut message_pt_in_ct_out = messages::encode(message);
-
     let mut message_ad = masking_iv.bytes().to_vec();
     message_ad.extend(header);
 
@@ -50,7 +50,7 @@ pub(crate) fn pack_message<'a, T: Message<'a>>(
 
     output.extend(message_pt_in_ct_out);
 
-    // See whoareyou.rs for a test of "mininmum packet size".
+    // See whoareyou.rs for the "mininmum packet size" test.
     debug_assert!(output.len() >= MIN_PACKET_BYTE_LENGTH);
 
     if output.len() > MAX_PACKET_BYTE_LENGTH {

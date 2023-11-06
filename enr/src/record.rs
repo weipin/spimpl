@@ -13,7 +13,7 @@ use rlp::{ItemDataSlice, ItemPayloadSlice};
 
 use crate::constants::MAX_RLP_ENCODED_BYTE_LENGTH;
 use crate::content::{Content, ContentRlpEncoded};
-use crate::{Error, Scheme, SequenceNumber};
+use crate::{Error, Scheme, SeqNum};
 
 /// Represents a node record.
 ///
@@ -116,7 +116,7 @@ impl Record {
     }
 
     /// Returns the sequence number.
-    pub fn seq(&self) -> SequenceNumber {
+    pub fn seq(&self) -> SeqNum {
         self.content.seq
     }
 

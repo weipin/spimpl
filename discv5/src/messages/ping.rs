@@ -11,11 +11,13 @@ use super::{Message, Type};
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
 pub struct Ping<'a> {
     pub request_id: RequestId<'a>,
-    pub enr_seq: enr::SequenceNumber,
+    pub enr_seq: enr::SeqNum,
 }
 
 impl<'a> Message<'a> for Ping<'a> {
     const TYPE: Type = Type::Ping;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 3; // see test `min_data_byte_length`
 }
 
 #[cfg(test)]
@@ -38,5 +40,15 @@ mod tests {
         assert_eq!(encoded, hex_literal::hex!("01ca88010203040506070807"));
 
         assert_eq!(rlp::decode::<Ping>(&encoded[1..]).unwrap(), ping);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = Ping {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            enr_seq: 0,
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), Ping::MIN_DATA_BYTE_LENGTH);
     }
 }

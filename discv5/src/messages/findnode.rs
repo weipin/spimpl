@@ -16,6 +16,8 @@ pub struct FindNode<'a> {
 
 impl<'a> Message<'a> for FindNode<'a> {
     const TYPE: Type = Type::FindNode;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 3; // see test `min_data_byte_length`
 }
 
 #[cfg(test)]
@@ -42,5 +44,15 @@ mod tests {
         assert_eq!(encoded, hex_literal::hex!("03cd880102030405060708c3010203"));
 
         assert_eq!(rlp::decode::<FindNode>(&encoded[1..]).unwrap(), findnode);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = FindNode {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            distances: vec![],
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), FindNode::MIN_DATA_BYTE_LENGTH);
     }
 }

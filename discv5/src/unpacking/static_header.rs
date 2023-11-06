@@ -31,7 +31,7 @@ pub(crate) fn unpack_static_header(
     let flag = Flag::from_u8(*flag_slice.first().unwrap()).ok_or(Error::InvalidFlag)?;
 
     let (nonce_slice, remaining) = remaining.split_at(size_of::<NonceType>());
-    let nonce = Nonce::from_slice(nonce_slice.try_into().unwrap());
+    let nonce = Nonce::from_array(nonce_slice.try_into().unwrap());
 
     if remaining.len() != size_of::<AuthDataSize>() {
         return Err(Error::InvalidAuthDataSize);

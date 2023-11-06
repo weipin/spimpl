@@ -6,7 +6,7 @@
 
 use std::mem::size_of;
 
-use enr::{NodeIdType, Scheme, SequenceNumber};
+use enr::{NodeIdType, Scheme, SeqNum};
 
 use crate::types::NonceType;
 
@@ -19,7 +19,7 @@ pub(crate) const ORDINARY_MESSAGE_AUTHDATA_SIZE_BYTES: &[u8; 2] =
     &ORDINARY_MESSAGE_AUTHDATA_SIZE.to_be_bytes();
 
 pub(crate) const WHOAREYOU_AUTHDATA_SIZE: AuthDataSize =
-    (size_of::<IdNonceType>() + size_of::<SequenceNumber>()) as AuthDataSize;
+    (size_of::<IdNonceType>() + size_of::<SeqNum>()) as AuthDataSize;
 pub(crate) const WHOAREYOU_AUTHDATA_SIZE_BYTES: &[u8; 2] = &WHOAREYOU_AUTHDATA_SIZE.to_be_bytes();
 
 pub(crate) const STATIC_HEADER_BYTE_LENGTH: usize = PROTOCOL_ID.len()

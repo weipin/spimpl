@@ -66,7 +66,7 @@ mod tests {
 
     use crate::messages::{self, Ping, Type};
     use crate::packet::constants::{MAX_PACKET_BYTE_LENGTH, STATIC_HEADER_BYTE_LENGTH};
-    use crate::packet::MaskingIvType;
+    use crate::packet::{aesgcm, MaskingIvType};
     use crate::types::RequestId;
 
     use super::*;
@@ -85,7 +85,7 @@ mod tests {
 
         let src_node_id = NodeId::from_slice(&src_node_id_data);
         let dest_node_id = NodeId::from_slice(&dest_node_id_data);
-        let nonce = Nonce::from_slice(&nonce_data);
+        let nonce = Nonce::from_array(nonce_data);
         let masking_iv = MaskingIv::from_slice(&masking_iv_data);
         let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {
@@ -118,7 +118,7 @@ mod tests {
             - size_of::<MaskingIvType>()
             - STATIC_HEADER_BYTE_LENGTH
             - size_of::<NodeIdType>()
-            - TAG_BYTE_LENGTH;
+            - aesgcm::TAG_BYTE_LENGTH;
         const CONTENT_BYTE_LEN: usize = 1186;
         let echo = Echo {
             content: vec![6; CONTENT_BYTE_LEN],
@@ -136,7 +136,7 @@ mod tests {
 
         let src_node_id = NodeId::from_slice(&src_node_id_data);
         let dest_node_id = NodeId::from_slice(&dest_node_id_data);
-        let nonce = Nonce::from_slice(&nonce_data);
+        let nonce = Nonce::from_array(nonce_data);
         let masking_iv = MaskingIv::from_slice(&masking_iv_data);
 
         let packed = pack(
@@ -167,8 +167,6 @@ mod tests {
         );
     }
 
-    const TAG_BYTE_LENGTH: usize = 16;
-
     // A dummy Message type with arbitrary content for packet byte length testing.
     #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
     struct Echo {
@@ -177,5 +175,7 @@ mod tests {
 
     impl<'a> Message<'a> for Echo {
         const TYPE: Type = Type::Ping;
+
+        const MIN_DATA_BYTE_LENGTH: usize = 0;
     }
 }

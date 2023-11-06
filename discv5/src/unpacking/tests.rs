@@ -10,6 +10,7 @@ mod tests {
 
     use enr::{NodeId, Scheme, Schemev4};
 
+    use crate::messages::{Message, Type};
     use crate::packet::Flag;
     use crate::unpacking::{
         unpack, unpack_handshake_message, unpack_handshake_message_with_record,
@@ -106,7 +107,8 @@ mod tests {
         ];
         for (test_name, err, packet) in test_data {
             assert_eq!(
-                process_ordinary_message_packet(&DEST_NODE_ID, READ_KEY, packet).unwrap_err(),
+                process_ordinary_message_packet::<Dummy>(&DEST_NODE_ID, READ_KEY, packet)
+                    .unwrap_err(),
                 err,
                 "{test_name}"
             );
@@ -160,8 +162,12 @@ mod tests {
         let read_key = hex!("4f9fac6de7567d1e3b1241dffe90f662");
         for (test_name, err, packet) in test_data {
             assert_eq!(
-                process_handshake_message_packet::<Schemev4>(&DEST_NODE_ID, &read_key, packet)
-                    .unwrap_err(),
+                process_handshake_message_packet::<Schemev4, Dummy>(
+                    &DEST_NODE_ID,
+                    &read_key,
+                    packet
+                )
+                .unwrap_err(),
                 err,
                 "{test_name}"
             );
@@ -216,7 +222,7 @@ mod tests {
         let read_key = hex!("53b1c075f41876423154e157470c2f48");
         for (test_name, err, packet) in test_data {
             assert_eq!(
-                process_handshake_message_with_record_packet::<Schemev4>(
+                process_handshake_message_with_record_packet::<Schemev4, Dummy>(
                     &DEST_NODE_ID,
                     &read_key,
                     packet
@@ -260,7 +266,7 @@ mod tests {
         unpack_whoareyou(&auth_data, encrypted_message_data).map(|_| ())
     }
 
-    fn process_ordinary_message_packet<'a>(
+    fn process_ordinary_message_packet<'a, M: Message<'a>>(
         dest_node_id: &'a NodeId,
         read_key: &[u8; 16],
         bytes: &'a [u8],
@@ -271,7 +277,7 @@ mod tests {
             return Err(Error::InvalidFlag);
         }
 
-        unpack_ordinary_message(
+        unpack_ordinary_message::<M>(
             &masking_iv,
             read_key,
             &nonce,
@@ -282,7 +288,7 @@ mod tests {
         .map(|_| ())
     }
 
-    fn process_handshake_message_packet<'a, S: Scheme>(
+    fn process_handshake_message_packet<'a, S: Scheme, M: Message<'a>>(
         dest_node_id: &NodeId,
         read_key: &[u8; 16],
         bytes: &'a [u8],
@@ -293,7 +299,7 @@ mod tests {
             return Err(Error::InvalidFlag);
         }
 
-        unpack_handshake_message::<S>(
+        unpack_handshake_message::<S, M>(
             &masking_iv,
             &read_key,
             &nonce,
@@ -304,7 +310,7 @@ mod tests {
         .map(|_| ())
     }
 
-    fn process_handshake_message_with_record_packet<'a, S: Scheme>(
+    fn process_handshake_message_with_record_packet<'a, S: Scheme, M: Message<'a>>(
         dest_node_id: &NodeId,
         read_key: &[u8; 16],
         bytes: &'a [u8],
@@ -315,7 +321,7 @@ mod tests {
             return Err(Error::InvalidFlag);
         }
 
-        unpack_handshake_message_with_record::<S>(
+        unpack_handshake_message_with_record::<S, M>(
             &masking_iv,
             &read_key,
             &nonce,
@@ -324,5 +330,16 @@ mod tests {
             encrypted_message_data,
         )
         .map(|_| ())
+    }
+
+    #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
+    struct Dummy {
+        content: Vec<u8>,
+    }
+
+    impl<'a> Message<'a> for Dummy {
+        const TYPE: Type = Type::Ping;
+
+        const MIN_DATA_BYTE_LENGTH: usize = 0;
     }
 }

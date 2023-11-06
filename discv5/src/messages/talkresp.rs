@@ -18,6 +18,8 @@ pub struct TalkResp<'a> {
 
 impl<'a> Message<'a> for TalkResp<'a> {
     const TYPE: Type = Type::TalkResp;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 3; // see test `min_data_byte_length`
 }
 
 #[cfg(test)]
@@ -39,5 +41,15 @@ mod tests {
         assert_eq!(encoded, hex_literal::hex!("06cd88010203040506070883070809"));
 
         assert_eq!(rlp::decode::<TalkResp>(&encoded[1..]).unwrap(), talkresp);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = TalkResp {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            response: vec![].into(),
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), TalkResp::MIN_DATA_BYTE_LENGTH);
     }
 }

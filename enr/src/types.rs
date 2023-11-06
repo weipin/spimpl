@@ -7,7 +7,7 @@
 use std::borrow::Cow;
 
 /// Represents a sequence number.
-pub type SequenceNumber = u64;
+pub type SeqNum = u64;
 
 /// Represents a 256-bit node ID.
 #[derive(rlp::Decode, rlp::Encode, Debug)]

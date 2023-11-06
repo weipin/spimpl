@@ -12,7 +12,7 @@ use crate::packet::constants::{
     MAX_PACKET_BYTE_LENGTH, MIN_PACKET_BYTE_LENGTH, STATIC_HEADER_BYTE_LENGTH,
 };
 use crate::packet::types::StaticHeader;
-use crate::packet::{aesctr, Flag, MaskingIv, MaskingIvType};
+use crate::packet::{aesctr, AuthData, Flag, MaskingIv, MaskingIvType};
 use crate::types::Nonce;
 
 use super::error::Error;
@@ -20,20 +20,10 @@ use super::static_header::unpack_static_header;
 
 // (masking-iv, flag, nonce, static_header, auth_data, encrypted_message_data)
 #[allow(clippy::type_complexity)]
-pub fn unpack<'a, 'b>(
+pub fn unpack<'a>(
     node_id: &NodeId,
     bytes: &'a [u8],
-) -> Result<
-    (
-        MaskingIv<'a>,
-        Flag,
-        Nonce<'b>,
-        StaticHeader,
-        Vec<u8>,
-        &'a [u8],
-    ),
-    Error,
-> {
+) -> Result<(MaskingIv<'a>, Flag, Nonce, StaticHeader, AuthData, &'a [u8]), Error> {
     if bytes.len() < MIN_PACKET_BYTE_LENGTH {
         return Err(Error::PacketTooSmall);
     }

@@ -15,6 +15,8 @@ cargo test --features "enr/k256"
 cargo +nightly udeps
 cargo upgrade --dry-run
 
+cargo audit
+
 # cargo +nightly careful test
 
 # cargo clean

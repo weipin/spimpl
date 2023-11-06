@@ -164,7 +164,7 @@ mod tests {
 
         let src_id = NodeId::from_slice(&src_id_data);
         let dest_id = NodeId::from_slice(&dest_id_data);
-        let nonce = Nonce::from_slice(&nonce_data);
+        let nonce = Nonce::from_array(nonce_data);
         let masking_iv = MaskingIv::from_slice(&masking_iv_data);
         let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {
@@ -214,7 +214,7 @@ mod tests {
 
         let src_id = NodeId::from_slice(&src_id_data);
         let dest_id = NodeId::from_slice(&dest_id_data);
-        let nonce = Nonce::from_slice(&nonce_data);
+        let nonce = Nonce::from_array(nonce_data);
         let masking_iv = MaskingIv::from_slice(&masking_iv_data);
         let request_id = RequestId::from_slice(&request_id_data).unwrap();
         let ping = Ping {

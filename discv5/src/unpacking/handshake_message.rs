@@ -8,6 +8,7 @@ use std::mem::size_of;
 
 use enr::{NodeId, NodeIdType, Record, RecordRlpEncoded, Scheme, Schemev4};
 
+use crate::messages::Message;
 use crate::packet::constants::size_of_handshake_message_authdata_fixed_part;
 use crate::packet::types::StaticHeader;
 use crate::packet::{aesgcm, MaskingIv};
@@ -16,14 +17,14 @@ use crate::types::Nonce;
 use super::Error;
 
 #[allow(clippy::type_complexity)]
-pub fn unpack<'a, S: Scheme>(
+pub fn unpack<'a, S: Scheme, M: Message<'a>>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
     static_header: &StaticHeader,
-    auth_data: &'a [u8],
-    encrypted_message_data: &[u8],
-) -> Result<(NodeId<'a>, S::Signature, S::PublicKey, Vec<u8>), Error> {
+    auth_data: &[u8],
+    encrypted_message_data: &'a [u8],
+) -> Result<(NodeId<'static>, S::Signature, S::PublicKey, Vec<u8>), Error> {
     if auth_data.len() != size_of_handshake_message_authdata_fixed_part::<S>() as usize {
         return Err(Error::InvalidAuthDataSize);
     }
@@ -34,6 +35,9 @@ pub fn unpack<'a, S: Scheme>(
     ad.extend(static_header);
     ad.extend(auth_data);
 
+    if encrypted_message_data.len() < aesgcm::ct_byte_length(M::MIN_DATA_BYTE_LENGTH) {
+        return Err(Error::InvalidMessageByteLength);
+    }
     let mut message_data = encrypted_message_data.to_vec();
     if !aesgcm::decrypt(read_key, nonce.bytes(), &ad, &mut message_data) {
         return Err(Error::MessageDecryptingFailed);
@@ -43,18 +47,23 @@ pub fn unpack<'a, S: Scheme>(
         return Err(Error::InvalidMessageByteLength);
     }
 
-    Ok((src_node_id, id_signature, eph_pubkey, message_data))
+    Ok((
+        NodeId::from_array(*src_node_id.bytes()),
+        id_signature,
+        eph_pubkey,
+        message_data,
+    ))
 }
 
 #[allow(clippy::type_complexity)]
-pub fn unpack_with_record<'a, S: Scheme>(
+pub fn unpack_with_record<'a, S: Scheme, M: Message<'a>>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
     static_header: &StaticHeader,
-    auth_data: &'a [u8],
-    encrypted_message_data: &[u8],
-) -> Result<(NodeId<'a>, S::Signature, S::PublicKey, Record, Vec<u8>), Error> {
+    auth_data: &[u8],
+    encrypted_message_data: &'a [u8],
+) -> Result<(NodeId<'static>, S::Signature, S::PublicKey, Record, Vec<u8>), Error> {
     if auth_data.len() <= size_of_handshake_message_authdata_fixed_part::<S>() as usize {
         return Err(Error::InvalidAuthDataSize);
     }
@@ -70,6 +79,9 @@ pub fn unpack_with_record<'a, S: Scheme>(
     ad.extend(static_header);
     ad.extend(auth_data);
 
+    if encrypted_message_data.len() < aesgcm::ct_byte_length(M::MIN_DATA_BYTE_LENGTH) {
+        return Err(Error::InvalidMessageByteLength);
+    }
     let mut message_data = encrypted_message_data.to_vec();
     if !aesgcm::decrypt(read_key, nonce.bytes(), &ad, &mut message_data) {
         return Err(Error::MessageDecryptingFailed);
@@ -79,7 +91,13 @@ pub fn unpack_with_record<'a, S: Scheme>(
         return Err(Error::InvalidMessageByteLength);
     }
 
-    Ok((src_node_id, id_signature, eph_pubkey, record, message_data))
+    Ok((
+        NodeId::from_array(*src_node_id.bytes()),
+        id_signature,
+        eph_pubkey,
+        record,
+        message_data,
+    ))
 }
 
 #[inline]
@@ -165,7 +183,7 @@ mod tests {
         assert_eq!(flag, Flag::HandshakeMessage);
 
         let (src_node_id, id_signature, eph_pubkey, message_data) =
-            unpack_handshake_message::<Schemev4>(
+            unpack_handshake_message::<Schemev4, Ping>(
                 &masking_iv,
                 &read_key,
                 &nonce,
@@ -225,7 +243,7 @@ mod tests {
         assert_eq!(flag, Flag::HandshakeMessage);
 
         let (src_node_id, id_signature, eph_pubkey, record, message_data) =
-            unpack_handshake_message_with_record::<Schemev4>(
+            unpack_handshake_message_with_record::<Schemev4, Ping>(
                 &masking_iv,
                 &read_key,
                 &nonce,

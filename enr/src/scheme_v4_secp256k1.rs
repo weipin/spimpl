@@ -78,7 +78,7 @@ impl Scheme for Schemev4Secp256k1 {
     }
 
     fn sign(hash: &[u8], private_key: &Self::PrivateKey) -> Result<Self::Signature, Self::Error> {
-        let msg = Message::from_slice(hash)?;
+        let msg = Message::from_digest_slice(hash)?;
         let mut noncedata = [0; 32];
         OsRng.fill_bytes(&mut noncedata);
         Ok(SECP256K1.sign_ecdsa_with_noncedata(&msg, private_key, &noncedata))
@@ -89,7 +89,7 @@ impl Scheme for Schemev4Secp256k1 {
         signature: &Self::Signature,
         public_key: &Self::PublicKey,
     ) -> Result<bool, Self::Error> {
-        let msg = Message::from_slice(hash)?;
+        let msg = Message::from_digest_slice(hash)?;
         // Ok(SECP256K1.verify_ecdsa(&msg, signature, public_key).is_ok())
         match SECP256K1.verify_ecdsa(&msg, signature, public_key) {
             Ok(_) => Ok(true),

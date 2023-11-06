@@ -9,7 +9,7 @@
 use std::net::Ipv4Addr;
 
 use crate::content::{Content, ContentRlpEncoded};
-use crate::{Error, Record, Scheme, SequenceNumber};
+use crate::{Error, Record, Scheme, SeqNum};
 
 /// Mutable record.
 pub struct PublishableRecord {
@@ -55,7 +55,7 @@ impl PublishableRecord {
     pub fn publish<S: Scheme>(
         &mut self,
         private_key: &S::PrivateKey,
-    ) -> Result<(SequenceNumber, String), Error> {
+    ) -> Result<(SeqNum, String), Error> {
         debug_assert!(self.content.public_key_data.is_some());
         debug_assert_eq!(
             &S::public_key_to_bytes(&S::new_public_key_from_private_key(private_key)),

@@ -66,7 +66,7 @@ impl Queue {
 #[cfg(test)]
 mod tests {
     use core::time;
-    use std::cell::RefCell;
+    use std::cell::UnsafeCell;
     use std::rc::Rc;
     use std::thread;
 
@@ -76,23 +76,75 @@ mod tests {
 
     #[test]
     fn test_group_async() {
-        let x = Rc::new(RefCell::new(0));
+        let x = Rc::new(UnsafeCell::new(0));
         let y = x.clone();
         let z = x.clone();
         let g = x.clone();
         let group = Group::new();
         let queue = Queue::new("", &QueueConfig::default());
         queue.dispatch_group_async(&group, move || {
-            y.replace_with(|&mut old| old + 1);
+            unsafe {
+                let v: &mut i32 = &mut *y.get(); // -- borrow --+
+                *v += 1;
+            }
         });
         queue.dispatch_group_async(&group, move || {
-            z.replace_with(|&mut old| old + 1);
+            unsafe {
+                let v: &mut i32 = &mut *z.get(); // -- borrow --+
+                *v += 1;
+            }
         });
         group.notify(&queue, move || {
-            g.replace_with(|&mut old| old + 1);
+            unsafe {
+                let v: &mut i32 = &mut *g.get(); // -- borrow --+
+                *v += 1;
+            }
         });
 
         thread::sleep(time::Duration::from_millis(500));
-        assert_eq!(*x.borrow(), 3);
+        assert_eq!(unsafe { *x.get() }, 3);
+    }
+
+    #[test]
+    fn test_group_async_with_different_queues() {
+        let x = Rc::new(UnsafeCell::new(0));
+        let y = Rc::new(UnsafeCell::new(0));
+        let z = Rc::new(UnsafeCell::new(0));
+        let group = Group::new();
+        let queue_a = Queue::new("a", &QueueConfig::default());
+        let queue_b = Queue::new("b", &QueueConfig::default());
+        let queue_c = Queue::new("c", &QueueConfig::default());
+        queue_a.dispatch_group_async(&group, {
+            let x = x.clone();
+            move || {
+                unsafe {
+                    let v: &mut i32 = &mut *x.clone().get(); // -- borrow --+
+                    *v += 1;
+                }
+            }
+        });
+        queue_b.dispatch_group_async(&group, {
+            let y = y.clone();
+            move || {
+                unsafe {
+                    let v: &mut i32 = &mut *y.clone().get(); // -- borrow --+
+                    *v += 1;
+                }
+            }
+        });
+        group.notify(&queue_c, {
+            let z = z.clone();
+            move || {
+                unsafe {
+                    let v: &mut i32 = &mut *z.clone().get(); // -- borrow --+
+                    *v += 1;
+                }
+            }
+        });
+
+        thread::sleep(time::Duration::from_millis(500));
+        assert_eq!(unsafe { *x.get() }, 1);
+        assert_eq!(unsafe { *y.get() }, 1);
+        assert_eq!(unsafe { *z.get() }, 1);
     }
 }

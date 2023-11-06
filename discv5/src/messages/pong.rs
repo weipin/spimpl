@@ -13,13 +13,15 @@ use super::{Message, Type};
 #[derive(rlp::Encode, rlp::Decode, Debug, PartialEq)]
 pub struct Pong<'a> {
     pub request_id: RequestId<'a>,
-    pub enr_seq: enr::SequenceNumber,
+    pub enr_seq: enr::SeqNum,
     pub recipient_ip: IpAddr,
     pub recipient_port: u16,
 }
 
 impl<'a> Message<'a> for Pong<'a> {
     const TYPE: Type = Type::Pong;
+
+    const MIN_DATA_BYTE_LENGTH: usize = 9; // see test `min_data_byte_length`
 }
 
 #[cfg(test)]
@@ -64,5 +66,17 @@ mod tests {
             hex!("02de880102030405060708079000000000000000000000ffffc00a02ff82ffff")
         );
         assert_eq!(rlp::decode::<Pong>(&encoded[1..]).unwrap(), pong);
+    }
+
+    #[test]
+    fn min_data_byte_length() {
+        let message = Pong {
+            request_id: RequestId::from_vec(vec![]).unwrap(),
+            enr_seq: 0,
+            recipient_ip: IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)),
+            recipient_port: 0,
+        };
+        let data = rlp::encode(&message);
+        assert_eq!(data.len(), Pong::MIN_DATA_BYTE_LENGTH);
     }
 }

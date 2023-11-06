@@ -42,4 +42,4 @@ pub use scheme_v4::Schemev4;
 #[cfg(feature = "k256")]
 pub use scheme_v4_k256::Schemev4K256;
 pub use scheme_v4_secp256k1::Schemev4Secp256k1;
-pub use types::{NodeId, NodeIdType, SequenceNumber};
+pub use types::{NodeId, NodeIdType, SeqNum};

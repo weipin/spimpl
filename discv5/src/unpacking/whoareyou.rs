@@ -6,7 +6,7 @@
 
 use std::mem::size_of;
 
-use enr::SequenceNumber;
+use enr::SeqNum;
 
 use crate::packet::constants::WHOAREYOU_AUTHDATA_SIZE;
 use crate::packet::types::IdNonceType;
@@ -17,7 +17,7 @@ use super::Error;
 pub fn unpack<'a>(
     auth_data: &'a [u8],
     encrypted_message_data: &[u8],
-) -> Result<(IdNonce<'a>, SequenceNumber), Error> {
+) -> Result<(IdNonce<'a>, SeqNum), Error> {
     if !encrypted_message_data.is_empty() {
         return Err(Error::InvalidMessageByteLength);
     }
@@ -28,7 +28,7 @@ pub fn unpack<'a>(
 
     let (id_nonce_slice, enr_seq_slice) = auth_data.split_at(size_of::<IdNonceType>());
     let id_nonce = IdNonce::from_slice(id_nonce_slice.try_into().unwrap());
-    let enr_seq = SequenceNumber::from_be_bytes(enr_seq_slice.try_into().unwrap());
+    let enr_seq = SeqNum::from_be_bytes(enr_seq_slice.try_into().unwrap());
     Ok((id_nonce, enr_seq))
 }
 

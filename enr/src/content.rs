@@ -9,12 +9,12 @@
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 use crate::constants::SEQUENCE_NUMBER_INITIAL;
-use crate::SequenceNumber;
+use crate::SeqNum;
 
 /// Represents record content.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Content {
-    pub(crate) seq: SequenceNumber,
+    pub(crate) seq: SeqNum,
     pub(crate) id: &'static [u8],
     pub(crate) public_key_data: Option<Vec<u8>>,
     pub(crate) ip4: Option<Ipv4Addr>,

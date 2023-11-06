@@ -6,6 +6,7 @@
 
 use enr::NodeId;
 
+use crate::messages::Message;
 use crate::packet::constants::ORDINARY_MESSAGE_AUTHDATA_SIZE;
 use crate::packet::types::StaticHeader;
 use crate::packet::{aesgcm, MaskingIv};
@@ -13,14 +14,14 @@ use crate::types::Nonce;
 
 use super::error::Error;
 
-pub fn unpack<'a>(
+pub fn unpack<'a, M: Message<'a>>(
     masking_iv: &MaskingIv,
     read_key: &[u8; 16],
     nonce: &Nonce,
     static_header: &StaticHeader,
-    auth_data: &'a [u8],
-    encrypted_message_data: &[u8],
-) -> Result<(NodeId<'a>, Vec<u8>), Error> {
+    auth_data: &[u8],
+    encrypted_message_data: &'a [u8],
+) -> Result<(NodeId<'static>, Vec<u8>), Error> {
     if auth_data.len() != ORDINARY_MESSAGE_AUTHDATA_SIZE as usize {
         return Err(Error::InvalidAuthDataSize);
     }
@@ -30,6 +31,9 @@ pub fn unpack<'a>(
     ad.extend(static_header);
     ad.extend(auth_data);
 
+    if encrypted_message_data.len() < aesgcm::ct_byte_length(M::MIN_DATA_BYTE_LENGTH) {
+        return Err(Error::InvalidMessageByteLength);
+    }
     let mut message_data = encrypted_message_data.to_vec();
     if !aesgcm::decrypt(read_key, nonce.bytes(), &ad, &mut message_data) {
         return Err(Error::MessageDecryptingFailed);
@@ -39,7 +43,7 @@ pub fn unpack<'a>(
         return Err(Error::InvalidMessageByteLength);
     }
 
-    let node_id = NodeId::from_slice(auth_data.try_into().unwrap());
+    let node_id = NodeId::from_array(auth_data.try_into().unwrap());
     Ok((node_id, message_data))
 }
 
@@ -75,7 +79,7 @@ mod tests {
             unpack(&dest_node_id, &packet_data).unwrap();
         assert_eq!(flag, Flag::OrdinaryMessage);
 
-        let (src_node_id, message_data) = unpack_ordinary_message(
+        let (src_node_id, message_data) = unpack_ordinary_message::<Ping>(
             &masking_iv,
             &read_key,
             &nonce,

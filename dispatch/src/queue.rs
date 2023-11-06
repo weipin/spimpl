@@ -84,7 +84,7 @@ impl Drop for Queue {
 #[cfg(test)]
 mod tests {
     use core::time;
-    use std::cell::RefCell;
+    use std::cell::UnsafeCell;
     use std::rc::Rc;
     use std::thread;
 
@@ -107,19 +107,22 @@ mod tests {
 
     #[test]
     fn test_dispatch_async() {
-        let x = Rc::new(RefCell::new(0));
+        let x = Rc::new(UnsafeCell::new(0));
         let y = x.clone();
         let queue = Queue::new("", &QueueConfig::default());
         queue.dispatch_async(move || {
-            y.replace(66);
+            unsafe {
+                let v: &mut i32 = &mut *y.get(); // -- borrow --+
+                *v = 66;
+            }
         });
         thread::sleep(time::Duration::from_millis(500));
-        assert_eq!(*x.borrow(), 66);
+        assert_eq!(unsafe { *x.get() }, 66);
     }
 
     #[test]
     fn test_dispatch_async_with_target() {
-        let x = Rc::new(RefCell::new(0));
+        let x = Rc::new(UnsafeCell::new(0));
         let y = x.clone();
         let target = Queue::new("my target", &QueueConfig::default());
         let queue = Queue::new(
@@ -130,10 +133,13 @@ mod tests {
             },
         );
         queue.dispatch_async(move || {
-            y.replace(66);
+            unsafe {
+                let v: &mut i32 = &mut *y.get(); // -- borrow --+
+                *v = 66;
+            }
         });
         thread::sleep(time::Duration::from_millis(500));
-        assert_eq!(*x.borrow(), 66);
+        assert_eq!(unsafe { *x.get() }, 66);
     }
 
     #[test]
